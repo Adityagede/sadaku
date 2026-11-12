@@ -2,6 +2,12 @@
 
 Aplikasi pribadi untuk mencatat uang dan menabung menuju album target. Stack: HTML, Tailwind CSS, JavaScript, PHP, dan MySQL.
 
+Dikembangkan oleh **I GEDE ADITYA SUASTIKA PUTRA**.
+
+## Deployment online
+
+Konfigurasi Docker/FrankenPHP untuk Vercel tersedia di repository. Ikuti [panduan deployment](DEPLOYMENT.md) untuk database online, environment variables, akses pemilik, serta pemeriksaan produksi. Konfigurasi ini perlu di-build dan diuji di Vercel sebelum dinyatakan siap digunakan online.
+
 ## Menyiapkan server dan database
 
 Kebutuhan: PHP 8.1 atau lebih baru dengan ekstensi pdo_mysql, mbstring, dan fileinfo; MySQL 8 atau lebih baru. PHP menangani aplikasi, sedangkan MySQL menyimpan album, gambar, dan catatan uang.
@@ -56,7 +62,7 @@ Kebutuhan: PHP 8.1 atau lebih baru dengan ekstensi pdo_mysql, mbstring, dan file
 Tanpa npm, server juga dapat dijalankan dengan:
 
 ```sh
-php -d upload_max_filesize=5M -d post_max_size=6M -S 127.0.0.1:8080 scripts/serve.php
+php -d upload_max_filesize=4M -d post_max_size=4352K -S 127.0.0.1:8080 scripts/serve.php
 ```
 
 Jalankan melalui router tersebut agar hanya file publik yang dapat diakses. Membuka HTML langsung atau melalui Live Server saja tidak menjalankan API PHP.
@@ -93,7 +99,7 @@ Perintah `setup-database.php` adalah pemasangan tabel awal proyek ini, sebagai p
 ## Alur penggunaan
 
 1. Buat album dengan nama dan nominal target.
-2. Pilih warna atau unggah foto sendiri (JPG, PNG, WebP; maksimal 5 MB). Tanggal target dan alasan menabung bersifat opsional.
+2. Pilih warna atau unggah foto sendiri (JPG, PNG, WebP; maksimal 4 MB). Tanggal target dan alasan menabung bersifat opsional.
 3. Buka album, lalu tambahkan setoran atau penarikan.
 4. Pantau saldo, sisa target, dan riwayat. Ubah atau hapus album dan catatan melalui tombol yang tersedia.
 
@@ -129,6 +135,7 @@ Fitur bulanan dihitung dari catatan yang sudah tersimpan. Tidak diperlukan tabel
 index.html                 Halaman utama aplikasi
 assets/css/tailwind.css    Sumber styling
 assets/css/style.css       Hasil build Tailwind
+assets/css/interface.css   Stylesheet sumber permukaan, navigasi, dan kredit developer
 assets/js/main.js          Navigasi, tampilan, formulir, dan permintaan API
 assets/js/navigation.js    Rute menu dan pilihan filter halaman yang terpisah
 assets/js/progress.js      Perhitungan dan format persentase target
@@ -137,6 +144,7 @@ assets/js/monthly-view.js  Tampilan ringkasan dan grafik bulanan
 assets/images/             Ikon dan sampul ilustrasi bawaan
 database/schema.sql       Struktur tabel MySQL
 php/environment.php       Pembaca konfigurasi environment
+php/csrf.php              Token CSRF lokal dan cookie bertanda tangan untuk produksi
 php/database.php          Koneksi PDO, pembacaan data, dan validasi saldo
 php/api.php               Endpoint CRUD dan gambar album
 scripts/setup-database.php Pemasangan tabel
@@ -165,6 +173,7 @@ npm run check
 npm run test:progress
 npm run test:monthly
 npm run test:navigation
+npm run test:csrf
 npm run db:check
 php -l php/api.php
 php -l php/database.php
@@ -183,7 +192,7 @@ Pengujian menjalankan instance MySQL dan server PHP sementara di loopback dengan
 
 ## Lingkungan pemakaian
 
-Versi ini untuk satu pengguna di server lokal. Belum ada sistem akun; semua browser yang mengakses server yang sama melihat data yang sama. Server pengembangan hanya terikat pada `127.0.0.1`.
+Versi ini untuk satu pengguna. Server pengembangan hanya terikat pada `127.0.0.1`, tanpa login lokal. Container produksi melindungi seluruh aplikasi dengan HTTP Basic melalui Caddy; hanya pemilik yang memiliki kredensial dapat masuk. Ini bukan sistem akun banyak pengguna; semua browser yang berhasil masuk melihat database yang sama.
 
 Untuk Apache, aktifkan `mod_rewrite` dan `AllowOverride All` agar aturan `.htaccess` berlaku. Pada hosting, isi konfigurasi database yang diberikan penyedia hosting melalui environment server atau `.env`. Penyiapan akses banyak pengguna merupakan pekerjaan terpisah.
 

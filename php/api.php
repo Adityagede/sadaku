@@ -2,13 +2,8 @@
 declare(strict_types=1);
 
 require __DIR__ . '/database.php';
+require __DIR__ . '/csrf.php';
 date_default_timezone_set('Asia/Jakarta');
-ini_set('session.use_strict_mode', '1');
-session_set_cookie_params(['httponly' => true, 'samesite' => 'Strict', 'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off']);
-session_start();
-$_SESSION['csrf'] ??= bin2hex(random_bytes(32));
-$csrf = $_SESSION['csrf'];
-session_write_close();
 header('X-Content-Type-Options: nosniff');
 header('Cache-Control: no-store');
 
@@ -55,6 +50,10 @@ function date_input(string $key, bool $required = false): ?string
 }
 
 try {
+    if ((int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > 4352 * 1024) {
+        throw new DomainException('Ukuran unggahan terlalu besar. Pilih gambar maksimal 4 MB.', 413);
+    }
+    $csrf = csrf_token();
     $db = database();
     $method = $_SERVER['REQUEST_METHOD'];
     $action = $_GET['action'] ?? 'state';
@@ -103,10 +102,10 @@ try {
         $upload = $_FILES['image'] ?? null;
         if ($upload && ($upload['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
             if (!is_int($upload['error']) || $upload['error'] !== UPLOAD_ERR_OK) {
-                throw new DomainException('Gambar gagal diunggah. Pilih ulang gambar maksimal 5 MB.', 422);
+                throw new DomainException('Gambar gagal diunggah. Pilih ulang gambar maksimal 4 MB.', 422);
             }
-            if ($upload['size'] > 5 * 1024 * 1024 || !is_uploaded_file($upload['tmp_name'])) {
-                throw new DomainException('Ukuran gambar maksimal 5 MB.', 422);
+            if ($upload['size'] > 4 * 1024 * 1024 || !is_uploaded_file($upload['tmp_name'])) {
+                throw new DomainException('Ukuran gambar maksimal 4 MB.', 422);
             }
             $imageType = (new finfo(FILEINFO_MIME_TYPE))->file($upload['tmp_name']);
             $dimensions = @getimagesize($upload['tmp_name']);

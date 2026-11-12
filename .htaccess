@@ -1,8 +1,8 @@
 DirectoryIndex index.html
 Options -Indexes
 RewriteEngine On
-RewriteRule ^(?:database|storage|scripts|node_modules|\.npm-cache|\.git|\.test-mysql-[^/]*)(?:/|$) - [F,L,NC]
+RewriteRule ^(?:database|storage|scripts|deployment|node_modules|\.npm-cache|\.git|\.test-mysql-[^/]*)(?:/|$) - [F,L,NC]
 RewriteRule ^php/(?!api\.php$) - [F,L,NC]
-<FilesMatch "^(?:\..*|package.*\.json|SOP\.md|README\.md)$">
+<FilesMatch "^(?:\..*|package.*\.json|SOP\.md|README\.md|DEPLOYMENT\.md|Dockerfile|Caddyfile)$">
     Require all denied
 </FilesMatch>

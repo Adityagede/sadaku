@@ -8,6 +8,7 @@
     <title>Sadaku — Ruang untuk impianmu</title>
     <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/interface.css">
     <script src="assets/js/main.js" type="module"></script>
 </head>
 <body>
@@ -34,7 +35,7 @@
 
     <aside class="sidebar">
         <a href="./" class="brand desktop-brand"><span class="brand-symbol">s</span>sadaku<span class="brand-period">.</span></a>
-        <p class="sidebar-label">MENU</p>
+        <p class="sidebar-label">MENU UTAMA</p>
         <nav class="app-navigation" aria-label="Navigasi aplikasi">
             <button type="button" data-view="overview" class="nav-item is-active" aria-current="page"><svg class="icon"><use href="#i-home"/></svg><span>Ringkasan</span></button>
             <button type="button" data-view="albums" class="nav-item"><svg class="icon"><use href="#i-album"/></svg><span>Album target</span><span id="nav-album-count" class="nav-count">0</span></button>
@@ -42,7 +43,10 @@
             <button type="button" data-view="statistics" class="nav-item"><svg class="icon"><use href="#i-chart"/></svg><span>Statistik</span></button>
         </nav>
         <div id="sidebar-goal" class="sidebar-note" hidden></div>
-        <div class="sidebar-bottom"><span class="personal-dot"></span>Catatan pribadi<span class="version">v0.2</span></div>
+        <div class="sidebar-bottom">
+            <div class="sidebar-status"><span class="personal-dot" aria-hidden="true"></span>Catatan pribadi<span class="version">v0.2</span></div>
+            <p class="developer-credit"><span>Dikembangkan oleh</span><strong>I GEDE ADITYA SUASTIKA PUTRA</strong></p>
+        </div>
     </aside>
 
     <div class="app-content">
@@ -105,10 +109,13 @@
                     </div>
                     <div id="monthly-report"></div>
                 </section>
-                <footer class="app-footer"><span>sadaku. <span>Pencatatan tabungan pribadi.</span></span><span id="save-status">Catatanmu tersimpan</span></footer>
             </div>
             <noscript><div class="connection-error">Aktifkan JavaScript untuk mengelola album dan catatan Sadaku.</div></noscript>
         </main>
+        <footer class="app-credit" aria-label="Pengembang Sadaku">
+            <p class="developer-credit"><span>Dikembangkan oleh</span><strong>I GEDE ADITYA SUASTIKA PUTRA</strong></p>
+            <button type="button" class="credit-top" data-action="back-to-top" aria-label="Kembali ke atas halaman">Ke atas <span aria-hidden="true">&uarr;</span></button>
+        </footer>
     </div>
 
     <dialog id="album-dialog" aria-labelledby="album-dialog-title">
@@ -116,7 +123,7 @@
         <form id="album-form">
             <input type="hidden" name="id">
             <div id="cover-preview" class="cover-preview" data-color="sage"><img id="preview-image" src="assets/images/album-cover.svg" alt="Pratinjau sampul album"><span id="preview-caption">Tempat untuk impianmu.</span></div>
-            <div class="upload-row"><label class="upload-button"><svg class="icon"><use href="#i-image"/></svg>Pilih foto sendiri<input id="album-image" type="file" name="image" accept="image/jpeg,image/png,image/webp"></label><span>JPG, PNG, WebP · maks. 5 MB</span></div>
+            <div class="upload-row"><label class="upload-button"><svg class="icon"><use href="#i-image"/></svg>Pilih foto sendiri<input id="album-image" type="file" name="image" accept="image/jpeg,image/png,image/webp"></label><span>JPG, PNG, WebP · maks. 4 MB</span></div>
             <label id="remove-image-label" class="checkbox-label" hidden><input type="checkbox" name="remove_image" value="1">Hapus foto saat ini</label>
             <fieldset class="color-field"><legend>Warna album</legend><label class="color-choice" data-color="sage"><input type="radio" name="color" value="sage" checked><span class="sr-only">Hijau sage</span></label><label class="color-choice" data-color="peach"><input type="radio" name="color" value="peach"><span class="sr-only">Peach</span></label><label class="color-choice" data-color="lilac"><input type="radio" name="color" value="lilac"><span class="sr-only">Lilac</span></label><label class="color-choice" data-color="sand"><input type="radio" name="color" value="sand"><span class="sr-only">Pasir</span></label></fieldset>
             <label class="field-label" for="album-name">Nama album</label><input id="album-name" name="name" type="text" placeholder="Misalnya, iPhone 17 Pro Max" maxlength="70" required>

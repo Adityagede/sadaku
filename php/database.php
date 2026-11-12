@@ -22,20 +22,49 @@ function database(): PDO
         throw new DomainException('Ekstensi pdo_mysql belum aktif pada PHP yang menjalankan Sadaku.', 503);
     }
 
+    $options = [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES => false,
+        PDO::ATTR_TIMEOUT => 5,
+        PDO::MYSQL_ATTR_MULTI_STATEMENTS => false,
+    ];
+    $tls = environment('DB_SSL', environment('APP_ENV') === 'production' ? 'true' : 'false');
+    if (!in_array($tls, ['true', 'false'], true)) {
+        throw new DomainException('DB_SSL harus bernilai true atau false.', 503);
+    }
+    $temporaryCa = null;
+    if ($tls === 'true') {
+        $ca = environment('DB_SSL_CA_PEM');
+        $caPath = '/etc/ssl/certs/ca-certificates.crt';
+        if ($ca !== '') {
+            $temporaryCa = tempnam(sys_get_temp_dir(), 'sadaku-ca-');
+            if ($temporaryCa === false || file_put_contents($temporaryCa, str_replace('\\n', "\n", $ca)) === false) {
+                if (is_string($temporaryCa)) unlink($temporaryCa);
+                throw new DomainException('Sertifikat CA database belum dapat disiapkan.', 503);
+            }
+            $caPath = $temporaryCa;
+        }
+        if (!is_readable($caPath)) {
+            throw new DomainException('Sertifikat CA database belum tersedia. Isi DB_SSL_CA_PEM.', 503);
+        }
+        $options[PDO::MYSQL_ATTR_SSL_CA] = $caPath;
+        $options[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = true;
+    }
+
     try {
         $connection = new PDO(
             "mysql:host=$host;port=$port;dbname=$name;charset=utf8mb4",
             environment('DB_USERNAME', 'root'),
             environment('DB_PASSWORD'),
-            [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_EMULATE_PREPARES => false,
-                PDO::ATTR_TIMEOUT => 5,
-                PDO::MYSQL_ATTR_MULTI_STATEMENTS => false,
-            ]
+            $options
         );
+        if ($tls === 'true' && !$connection->query("SHOW STATUS LIKE 'Ssl_cipher'")->fetchColumn(1)) {
+            $connection = null;
+            throw new DomainException('Database tidak menyediakan koneksi TLS yang diwajibkan.', 503);
+        }
     } catch (PDOException $error) {
+        $connection = null;
         $code = (int) ($error->errorInfo[1] ?? 0);
         $message = match ($code) {
             1049 => 'Database MySQL belum ditemukan. Buat database sesuai DB_DATABASE di .env, lalu jalankan php scripts/setup-database.php.',
@@ -43,6 +72,8 @@ function database(): PDO
             default => 'Koneksi MySQL belum berhasil. Pastikan MySQL aktif dan DB_HOST serta DB_PORT di .env sudah sesuai.',
         };
         throw new DomainException($message, 503);
+    } finally {
+        if (is_string($temporaryCa)) unlink($temporaryCa);
     }
 
     return $connection;

@@ -4,12 +4,13 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build-css.mjs",
-    "dev": "php -d upload_max_filesize=5M -d post_max_size=6M -S 127.0.0.1:8080 scripts/serve.php",
+    "dev": "php -d upload_max_filesize=4M -d post_max_size=4352K -S 127.0.0.1:8080 scripts/serve.php",
     "check": "node --check assets/js/main.js",
     "test": "node scripts/test-mysql.mjs",
     "test:progress": "node --test scripts/progress.test.mjs",
     "test:monthly": "node --test scripts/monthly.test.mjs",
     "test:navigation": "node --test scripts/navigation.test.mjs",
+    "test:csrf": "php scripts/csrf.test.php",
     "db:setup": "php scripts/setup-database.php",
     "db:check": "php scripts/check-database.php"
   },

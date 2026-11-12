@@ -447,6 +447,10 @@ document.addEventListener('click', event => {
     switch (button.dataset.action) {
         case 'new-album': openAlbumForm(); break;
         case 'edit-album': openAlbumForm(id); break;
+        case 'back-to-top':
+            $('#konten').focus({ preventScroll: true });
+            window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+            break;
         case 'open-album': navigate('detail', id); break;
         case 'new-entry': openEntryForm(id); break;
         case 'edit-entry': openEntryForm(null, id); break;
@@ -492,8 +496,8 @@ $('#album-image').addEventListener('change', event => {
     const file = event.target.files[0];
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     previewUrl = null;
-    if (file && (file.size > 5 * 1024 * 1024 || !['image/jpeg', 'image/png', 'image/webp'].includes(file.type))) {
-        $('.form-error', $('#album-dialog')).textContent = 'Pilih gambar JPG, PNG, atau WebP, maksimal 5 MB.';
+    if (file && (file.size > 4 * 1024 * 1024 || !['image/jpeg', 'image/png', 'image/webp'].includes(file.type))) {
+        $('.form-error', $('#album-dialog')).textContent = 'Pilih gambar JPG, PNG, atau WebP, maksimal 4 MB.';
         event.target.value = '';
     } else {
         $('.form-error', $('#album-dialog')).textContent = '';

@@ -3,6 +3,8 @@ import { spawn } from 'node:child_process';
 import { request as httpRequest } from 'node:http';
 import { fileURLToPath } from 'node:url';
 import { setTimeout as delay } from 'node:timers/promises';
+import { cp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { join, resolve, sep } from 'node:path';
 
 async function fetch(url, options = {}) {
     const headers = { ...options.headers, Connection: 'close' };
@@ -43,8 +45,31 @@ const base = `http://127.0.0.1:${port}`;
 if (process.env.SADAKU_ISOLATED_TEST !== '1') {
     throw new Error('Jalankan melalui npm test agar pengujian memakai MySQL sementara yang terpisah.');
 }
-const server = spawn('php', ['-d', 'upload_max_filesize=5M', '-d', 'post_max_size=6M', '-S', `127.0.0.1:${port}`, 'scripts/serve.php'], {
-    cwd: root,
+// Mode produksi juga memeriksa layout filesystem yang dipakai Dockerfile.
+const runtime = process.env.APP_ENV === 'production' ? resolve(root, `.test-storage-runtime-${port}`) : null;
+if (runtime) {
+    await mkdir(join(runtime, 'public', 'php'), { recursive: true });
+    await mkdir(join(runtime, 'public', 'assets', 'css'), { recursive: true });
+    await cp(join(root, 'php'), join(runtime, 'php'), { recursive: true });
+    await cp(join(root, 'index.html'), join(runtime, 'public', 'index.html'));
+    await cp(join(root, 'deployment', 'api.php'), join(runtime, 'public', 'php', 'api.php'));
+    for (const file of ['style.css', 'interface.css']) {
+        await cp(join(root, 'assets', 'css', file), join(runtime, 'public', 'assets', 'css', file));
+    }
+    for (const directory of ['js', 'images']) {
+        await cp(join(root, 'assets', directory), join(runtime, 'public', 'assets', directory), { recursive: true });
+    }
+    // Server bawaan PHP jatuh ke index.html untuk sebagian URL yang tidak ada.
+    // Hindari fallback tersebut agar pemeriksaan file privat tetap menguji 404.
+    await writeFile(join(runtime, 'router.php'), `<?php
+        $path = rawurldecode(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
+        if ($path === '/' || is_file($_SERVER['DOCUMENT_ROOT'] . $path)) return false;
+        http_response_code(404);
+        echo 'Halaman tidak ditemukan.';
+    `);
+}
+const server = spawn('php', ['-d', 'upload_max_filesize=5M', '-d', 'post_max_size=6M', '-S', `127.0.0.1:${port}`, ...(runtime ? ['-t', join(runtime, 'public'), join(runtime, 'router.php')] : ['scripts/serve.php'])], {
+    cwd: runtime || root,
     env: process.env,
     stdio: ['ignore', 'ignore', 'pipe']
 });
@@ -79,16 +104,24 @@ try {
     const page = await fetch(`${base}/`);
     assert.equal(page.status, 200);
     assert.match(await page.text(), /Sadaku/);
-    for (const asset of ['assets/css/style.css', 'assets/js/main.js', 'assets/js/progress.js', 'assets/js/monthly.js', 'assets/js/monthly-view.js', 'assets/js/navigation.js', 'assets/images/album-cover.svg']) {
+    for (const asset of ['assets/css/style.css', 'assets/css/interface.css', 'assets/js/main.js', 'assets/js/progress.js', 'assets/js/monthly.js', 'assets/js/monthly-view.js', 'assets/js/navigation.js', 'assets/images/album-cover.svg']) {
         assert.equal((await fetch(`${base}/${asset}`)).status, 200);
     }
-    for (const privatePath of ['storage/sadaku.sqlite', 'php/database.php', 'php/environment.php', '.env', '.env.example', 'database/schema.sql', 'SOP.md', '.gitignore', 'package.json', 'scripts/serve.php']) {
-        assert.equal((await fetch(`${base}/${privatePath}`)).status, 404);
+    for (const privatePath of ['storage/sadaku.sqlite', 'php/database.php', 'php/environment.php', 'php/csrf.php', '.env', '.env.example', 'database/schema.sql', 'SOP.md', '.gitignore', 'package.json', 'scripts/serve.php', 'Dockerfile', 'Caddyfile', '.dockerignore', 'deployment/entrypoint.sh', 'deployment/api.php', 'DEPLOYMENT.md']) {
+        assert.equal((await fetch(`${base}/${privatePath}`)).status, 404, privatePath);
         checks++;
     }
     let state = await api();
     csrf = state.csrf;
     assert.equal(state.albums.length, 0);
+    assert.equal((await api()).csrf, csrf, 'Token stabil antarpermintaan');
+    if (process.env.APP_ENV === 'production') {
+        assert.match(cookie, /^__Host-sadaku_csrf=/);
+        const originalCookie = cookie;
+        cookie = originalCookie + 'a';
+        await api('save_album', { name: 'Cookie palsu', target: 500, color: 'sage' }, 403);
+        cookie = originalCookie;
+    }
     await api('save_album', { name: 'Tanpa token', target: 500, color: 'sage' }, 403, '');
     await api('save_album', { name: ' ', target: 500, color: 'sage' }, 422);
     await api('save_album', { name: 'Negatif', target: -1, color: 'sage' }, 422);
@@ -96,6 +129,8 @@ try {
     await api('save_album', { name: 'Warna', target: 500, color: 'invalid' }, 422);
     await api('save_album', { name: 'SVG', target: 500, color: 'sage', image: new Blob(['<svg xmlns="http://www.w3.org/2000/svg"/>'], { type: 'image/svg+xml' }) }, 422);
     await api('save_album', { name: 'Gambar rusak', target: 500, color: 'sage', image: new Blob(['not an image'], { type: 'image/png' }) }, 422);
+    await api('save_album', { name: 'Gambar terlalu besar', target: 500, color: 'sage', image: new Blob([new Uint8Array(4 * 1024 * 1024 + 1)], { type: 'image/png' }) }, 422);
+    await api('save_album', { name: 'Payload terlalu besar', target: 500, color: 'sage', image: new Blob([new Uint8Array(4352 * 1024)], { type: 'image/png' }) }, 413);
     const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6OAAAAABJRU5ErkJggg==', 'base64');
     const image = new Blob([png], { type: 'image/png' });
     state = await api('save_album', { name: 'Target iPhone 17 Pro Max', target: 25000000, color: 'peach', motivation: 'Untuk foto keluarga', image });
@@ -156,4 +191,10 @@ try {
 } finally {
     server.kill();
     if (server.exitCode === null) await new Promise(resolve => server.once('exit', resolve));
+    if (runtime) {
+        if (!runtime.startsWith(resolve(root) + sep) || !runtime.split(sep).at(-1).startsWith('.test-storage-runtime-')) {
+            throw new Error('Path pembersihan runtime tidak valid.');
+        }
+        await rm(runtime, { recursive: true, force: true });
+    }
 }

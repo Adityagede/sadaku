@@ -1,0 +1,19 @@
+# Hanya file aplikasi yang diperlukan boleh masuk build context.
+**
+!Dockerfile
+!Caddyfile
+!index.html
+!php/
+!php/*.php
+!assets/
+!assets/css/
+!assets/css/style.css
+!assets/css/interface.css
+!assets/js/
+!assets/js/*.js
+!assets/images/
+!assets/images/*.svg
+!deployment/
+!deployment/api.php
+!deployment/entrypoint.sh
+!deployment/php.ini

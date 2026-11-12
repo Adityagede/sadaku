@@ -16,6 +16,7 @@ $publicFiles = [
     '/' => '/index.html',
     '/index.html' => '/index.html',
     '/assets/css/style.css' => '/assets/css/style.css',
+    '/assets/css/interface.css' => '/assets/css/interface.css',
     '/assets/js/main.js' => '/assets/js/main.js',
     '/assets/js/progress.js' => '/assets/js/progress.js',
     '/assets/js/monthly.js' => '/assets/js/monthly.js',

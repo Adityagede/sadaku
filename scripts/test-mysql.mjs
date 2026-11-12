@@ -4,6 +4,7 @@ import { mkdir, rm } from 'node:fs/promises';
 import { resolve, join, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { setTimeout as delay } from 'node:timers/promises';
+import { randomBytes } from 'node:crypto';
 
 const run = promisify(execFile);
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -24,6 +25,8 @@ const testEnvironment = {
     DB_DATABASE: 'sadaku_test',
     DB_USERNAME: 'root',
     DB_PASSWORD: '',
+    DB_SSL: 'false',
+    APP_ENV: 'local',
     SADAKU_ISOLATED_TEST: '1',
 };
 let mysql;
@@ -60,6 +63,12 @@ try {
     console.log(check.stdout.trim());
     const result = await run(process.execPath, ['scripts/test-api.mjs'], { cwd: root, env: testEnvironment, timeout: 60000, maxBuffer: 1024 * 1024 });
     console.log(result.stdout.trim());
+    const productionResult = await run(process.execPath, ['scripts/test-api.mjs'], {
+        cwd: root,
+        env: { ...testEnvironment, APP_ENV: 'production', APP_KEY: randomBytes(32).toString('hex') },
+        timeout: 60000, maxBuffer: 1024 * 1024,
+    });
+    console.log('Mode produksi: ' + productionResult.stdout.trim());
 } catch (error) {
     console.error(error.stderr || error.message);
     process.exitCode = 1;

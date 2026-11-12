@@ -30,4 +30,5 @@ database/backups/
 # File sistem operasi
 .DS_Store
 Thumbs.db
+.vercel/
 

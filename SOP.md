@@ -57,8 +57,8 @@ Struktur berikut menjadi acuan. Buat folder dan file saat memang dibutuhkan; jan
 - Catatan dapat dilihat, dibuat, diubah, dan dihapus. Saldo serta progres dihitung dari catatan tersimpan, bukan diisi manual.
 - Perubahan catatan ditolak jika membuat saldo negatif pada titik mana pun dalam riwayat album. Tanggal catatan tidak boleh di masa depan.
 - Motivasi berasal dari gambar, alasan menabung, sisa nominal, dan progres pengguna sendiri. Jangan menambahkan angka atau riwayat fiktif sebagai data pengguna.
-- Versi ini untuk penggunaan pribadi secara lokal, tanpa sistem akun atau akses banyak pengguna.
-- Foto unggahan berupa JPG, PNG, atau WebP valid, maksimal 5 MB, dan disimpan sebagai data gambar dalam database.
+- Versi ini untuk satu pengguna. Pengembangan lokal tanpa login; container produksi memakai HTTP Basic Caddy untuk akses pemilik, tanpa sistem akun banyak pengguna.
+- Foto unggahan berupa JPG, PNG, atau WebP valid, maksimal 4 MB, dan disimpan sebagai data gambar dalam database.
 - Pengujian CRUD memakai instance MySQL sementara yang terpisah agar tidak mengubah database pengguna.
 - Statistik menjadi halaman khusus laporan: setoran, penarikan, tabungan bersih, grafik enam bulan, perbandingan bulanan, dan rutinitas. Ringkasan berisi kondisi saat ini, album, dan maksimal lima catatan terbaru bulan ini dari seluruh album.
 - Laporan bulanan menampilkan setoran, penarikan, dan tabungan bersih (setoran dikurangi penarikan), dengan pilihan semua album atau satu album. Gunakan istilah Penarikan karena catatan ini bukan pencatatan belanja harian.
@@ -77,7 +77,7 @@ Struktur berikut menjadi acuan. Buat folder dan file saat memang dibutuhkan; jan
 - Mobile first menjadi standar: rancang susunan konten, navigasi, dan interaksi untuk ponsel terlebih dahulu, lalu sesuaikan untuk tablet dan desktop.
 - Pada Tailwind, gunakan class dasar untuk tampilan ponsel dan breakpoint untuk penyesuaian layar yang lebih lebar.
 - Desain harus modern dan interaktif, dengan keseimbangan antara isi, ruang kosong, warna, dan efek visual.
-- Gunakan bayangan yang tegas tetapi konsisten pada kartu dan navigasi. Bedakan permukaan putih dari latar abu-hijau, dengan menu aktif yang mudah dikenali.
+- Gunakan latar utama putih kehijauan `#f6f8f6` dengan kartu putih. Bayangan kartu dan navigasi dibuat lebih tegas tetapi konsisten; menu aktif mudah dikenali melalui warna, ikon, dan label.
 - Tampilan harus terasa wajar untuk aplikasi pencatatan: jelas, nyaman dibaca, dan mudah digunakan.
 - Tentukan warna, tipografi, dan jarak berdasarkan isi serta fungsi halaman.
 - Berikan respons interaksi yang jelas pada tombol, form, dan perubahan data, termasuk keadaan aktif, memuat, berhasil, atau gagal bila relevan.
@@ -88,6 +88,8 @@ Struktur berikut menjadi acuan. Buat folder dan file saat memang dibutuhkan; jan
 - Gunakan bahasa antarmuka yang singkat dan konsisten.
 - Tampilkan progres dari nilai saldo sebenarnya tanpa membulatkan setoran kecil menjadi nol. Penanda visual minimum boleh digunakan untuk saldo positif; persentase dan nominal harus tetap akurat.
 - Periksa tampilan di ponsel, tablet, dan desktop, termasuk keterbacaan, ukuran tombol, navigasi, dan konten yang meluap secara horizontal.
+- Kredit **I GEDE ADITYA SUASTIKA PUTRA** ditampilkan kecil di bawah sidebar desktop dan setelah konten pada ponsel. Hindari footer promosi besar dalam aplikasi. Kredit tetap tersedia saat database gagal dan tidak tertutup navigasi bawah.
+- Navigasi ponsel memakai empat tombol dengan area sentuh minimal 44 piksel dan indikator aktif yang jelas. Desktop memakai sidebar dengan status serta kredit developer di bawah. Stylesheet sumber `assets/css/interface.css` mengatur penyempurnaan ini tanpa menyunting hasil build Tailwind.
 - AOS atau Swiper boleh digunakan bila membantu kebutuhan halaman. Keduanya tidak wajib dipasang.
 
 ## 5. Penulisan kode
@@ -117,6 +119,16 @@ Struktur berikut menjadi acuan. Buat folder dan file saat memang dibutuhkan; jan
 - Simpan contoh konfigurasi tanpa rahasia di `.env.example`. `database/schema.sql` tetap masuk repository sebagai struktur tabel, tanpa data pengguna.
 - Jalankan pemeriksaan yang sesuai, buat commit dengan pesan yang menjelaskan perubahan, lalu push ke GitHub. Hindari force push tanpa instruksi khusus.
 - `.gitignore` tidak menghapus rahasia yang sudah terlanjur masuk riwayat Git. Jika terjadi kebocoran, cabut atau ganti kredensial terkait dan tangani riwayatnya sebelum publikasi berikutnya.
+
+## 6b. Deployment produksi
+
+- Ikuti `DEPLOYMENT.md`. Aplikasi dibungkus dengan Docker/FrankenPHP dan Caddy untuk Container Runtime Vercel. MySQL harus tersedia sebagai layanan online terpisah.
+- Rahasia hanya disimpan dalam environment server. `.dockerignore` memakai daftar file yang diizinkan; `.env`, kredensial, backup, dan data lokal tidak masuk image.
+- Direktori publik image hanya berisi halaman, aset browser, dan pembungkus API. Jangan menyajikan root repository sebagai direktori publik.
+- Container memerlukan `APP_ENV=production`, kredensial database, `APP_USER`, `APP_PASSWORD_HASH` bcrypt, serta `APP_KEY` acak yang stabil antar-instance.
+- Token CSRF produksi berupa cookie bertanda tangan berumur 24 jam dengan atribut Secure, HttpOnly, SameSite=Strict dan prefix `__Host-`. Sesi PHP lokal hanya dipakai untuk pengembangan.
+- Koneksi MySQL produksi memakai TLS dengan verifikasi sertifikat; sesuaikan CA melalui `DB_SSL_CA_PEM` bila diperlukan.
+- Database preview terpisah dari produksi. Build image, autentikasi, TLS, persistensi, dan operasi aplikasi harus diuji online sebelum deployment dinyatakan siap dipakai.
 
 ## 7. Syarat pekerjaan selesai
 
