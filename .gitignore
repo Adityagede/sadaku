@@ -1,0 +1,33 @@
+node_modules/
+.npm-cache/
+.env
+.env.*
+!.env.example
+storage/*
+!storage/.htaccess
+.test-storage-*/
+.test-mysql-*/
+
+# Kredensial dan konfigurasi pribadi
+.aws/
+.ssh/
+*.pem
+*.key
+*.p12
+*.pfx
+credentials*.json
+service-account*.json
+
+# Data lokal, backup, dan log
+backups/
+database/backups/
+*.sql.gz
+*.dump
+*.sqlite
+*.sqlite3
+*.log
+
+# File sistem operasi
+.DS_Store
+Thumbs.db
+

@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#214a3c">
+    <meta name="description" content="Sadaku, ruang untuk mencatat uang dan menabung menuju target pribadimu. Buat album, pasang foto impianmu, dan ikuti progresnya.">
+    <title>Sadaku — Ruang untuk impianmu</title>
+    <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="assets/js/main.js" type="module"></script>
+</head>
+<body>
+    <a class="skip-link" href="#konten">Lewati ke konten</a>
+    <svg class="icon-definitions" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></symbol>
+        <symbol id="i-album" viewBox="0 0 24 24"><rect x="5" y="3" width="16" height="16" rx="3"/><path d="M3 7v12a3 3 0 0 0 3 3h12M5 14l5-5 5 5 3-3 3 3"/><circle cx="16.5" cy="7.5" r="1"/></symbol>
+        <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 11a9 9 0 1 1 2.5 7M3 4v7h7m2-5v6l4 2"/></symbol>
+        <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 3v17h17M9 15v-4m5 4V7m5 8V4"/></symbol>
+        <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+        <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+        <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5m6-6-6 6 6 6"/></symbol>
+        <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M20 8V6a2 2 0 0 0-2-2H6a3 3 0 0 0 0 6h14v10H6a3 3 0 0 1-3-3V7"/><path d="M20 12h-5v5h5m-3-2.5h.1"/></symbol>
+        <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
+        <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+        <symbol id="i-edit" viewBox="0 0 24 24"><path d="m15 4 5 5M4 20l5-1L21 7a2 2 0 0 0-5-5L4 14z"/></symbol>
+        <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/></symbol>
+        <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+        <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></symbol>
+        <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="m3 16 6-6 6 6 3-3 3 3"/><circle cx="16" cy="8" r="1"/></symbol>
+        <symbol id="i-in" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6v12h12"/></symbol>
+        <symbol id="i-out" viewBox="0 0 24 24"><path d="M6 18 18 6M6 6h12v12"/></symbol>
+    </svg>
+
+    <aside class="sidebar">
+        <a href="./" class="brand desktop-brand"><span class="brand-symbol">s</span>sadaku<span class="brand-period">.</span></a>
+        <p class="sidebar-label">MENU</p>
+        <nav class="app-navigation" aria-label="Navigasi aplikasi">
+            <button type="button" data-view="overview" class="nav-item is-active" aria-current="page"><svg class="icon"><use href="#i-home"/></svg><span>Ringkasan</span></button>
+            <button type="button" data-view="albums" class="nav-item"><svg class="icon"><use href="#i-album"/></svg><span>Album target</span><span id="nav-album-count" class="nav-count">0</span></button>
+            <button type="button" data-view="history" class="nav-item"><svg class="icon"><use href="#i-history"/></svg><span>Riwayat</span></button>
+            <button type="button" data-view="statistics" class="nav-item"><svg class="icon"><use href="#i-chart"/></svg><span>Statistik</span></button>
+        </nav>
+        <div id="sidebar-goal" class="sidebar-note" hidden></div>
+        <div class="sidebar-bottom"><span class="personal-dot"></span>Catatan pribadi<span class="version">v0.2</span></div>
+    </aside>
+
+    <div class="app-content">
+        <header class="app-header">
+            <a href="./" class="brand mobile-brand"><span class="brand-symbol">s</span>sadaku<span class="brand-period">.</span></a>
+            <p id="header-location" class="header-location">Ruang tabunganmu</p>
+            <div class="header-right"><span id="today" class="header-date"></span><span class="personal-badge">Ruang pribadi</span></div>
+        </header>
+        <main id="konten" class="main-content" tabindex="-1">
+            <div id="connection-error" class="connection-error" role="alert" hidden><div><strong>Sadaku belum terhubung.</strong><p id="connection-message"></p></div><button type="button" class="button button-outline" data-action="retry">Coba lagi</button></div>
+            <div id="loading" class="loading-state" role="status"><span class="loading-dot"></span>Menyiapkan ruang tabunganmu…</div>
+            <div id="application" hidden>
+                <p id="period-announcement" class="sr-only" role="status"></p>
+                <section id="overview-view" aria-labelledby="overview-title">
+                    <div class="page-heading"><div><p class="eyebrow">RINGKASAN</p><h1 id="overview-title" tabindex="-1">Ruang tabunganmu<span class="heading-dot">.</span></h1><p class="page-description">Pantau uang yang terkumpul dan tujuan yang sedang kamu usahakan.</p></div><button type="button" class="button button-primary" data-action="new-entry"><svg class="icon"><use href="#i-plus"/></svg>Catat uang</button></div>
+                    <div class="summary-grid">
+                        <article class="summary-card summary-main"><div class="summary-label"><span>Total tabungan</span><svg class="icon"><use href="#i-wallet"/></svg></div><p id="total-balance" class="summary-value">Rp0</p><p id="monthly-summary" class="summary-foot">Belum ada setoran bulan ini</p></article>
+                        <article class="summary-card"><div class="summary-label"><span>Target berjalan</span><span class="stat-icon sage"><svg class="icon"><use href="#i-target"/></svg></span></div><p id="active-count" class="summary-value">0<span>album</span></p><p class="summary-foot">Album yang masih kamu kumpulkan</p></article>
+                        <article class="summary-card"><div class="summary-label"><span>Target tercapai</span><span class="stat-icon peach"><svg class="icon"><use href="#i-check"/></svg></span></div><p id="completed-count" class="summary-value">0<span>album</span></p><p class="summary-foot">Tabungan sudah mencapai target</p></article>
+                    </div>
+                    <div id="motivation-panel" class="motivation-panel"></div>
+                </section>
+
+                <section id="albums-view" class="section-block" aria-labelledby="albums-title">
+                    <div class="section-heading"><div><p class="eyebrow">TUJUAN TABUNGAN</p><h2 id="albums-title" tabindex="-1">Album targetmu</h2></div><button type="button" class="button button-outline" data-action="new-album"><svg class="icon"><use href="#i-plus"/></svg>Buat album</button></div>
+                    <div class="album-toolbar"><div class="filter-tabs" role="group" aria-label="Status album"><button type="button" data-filter="all" class="is-active" aria-pressed="true">Semua <span id="filter-count">0</span></button><button type="button" data-filter="active" aria-pressed="false">Berjalan</button><button type="button" data-filter="completed" aria-pressed="false">Tercapai</button></div><label class="search-field"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg><span class="sr-only">Cari nama album</span><input id="album-search" type="search" placeholder="Cari album…" maxlength="70"></label></div>
+                    <div id="album-grid" class="album-grid"></div>
+                </section>
+
+                <section id="recent-view" class="section-block" aria-labelledby="recent-title">
+                    <div class="section-heading"><div><p class="eyebrow">AKTIVITAS</p><h2 id="recent-title">Catatan bulan ini</h2></div><button type="button" class="text-button" data-action="view-current-history">Lihat riwayat<svg class="icon"><use href="#i-arrow"/></svg></button></div>
+                    <div id="recent-entries" class="entries-panel"></div>
+                </section>
+
+                <section id="detail-view" hidden aria-labelledby="detail-title">
+                    <div id="album-detail"></div>
+                    <div class="section-heading mt-8"><div><p class="eyebrow">SETORAN & PENARIKAN</p><h2>Riwayat album</h2></div><button type="button" class="button button-primary" data-action="new-entry"><svg class="icon"><use href="#i-plus"/></svg>Catat uang</button></div>
+                    <div class="period-controls detail-period-controls"><label for="detail-month"><span>Periode catatan</span><select id="detail-month"></select></label><p id="detail-count" class="period-count"></p></div>
+                    <div id="detail-month-summary" class="period-summary history-summary"></div>
+                    <div id="detail-entries" class="entries-panel"></div>
+                </section>
+                <section id="history-view" hidden aria-labelledby="history-title">
+                    <div class="page-heading"><div><p class="eyebrow">CATATAN UANG</p><h1 id="history-title" tabindex="-1">Riwayat uangmu<span class="heading-dot">.</span></h1><p class="page-description">Lihat setoran dan penarikan berdasarkan bulan pencatatannya.</p></div><button type="button" class="button button-primary" data-action="new-entry"><svg class="icon"><use href="#i-plus"/></svg>Catat uang</button></div>
+                    <div class="period-controls">
+                        <label for="history-month"><span>Periode</span><select id="history-month"></select></label>
+                        <label for="history-album"><span>Album</span><select id="history-album"></select></label>
+                    </div>
+                    <div class="history-period-heading"><h2 id="history-period-title"></h2><span id="history-count" class="count-badge"></span></div>
+                    <div id="history-summary" class="period-summary history-summary"></div>
+                    <div id="all-entries" class="entries-panel"></div>
+                </section>
+                <section id="statistics-view" hidden aria-labelledby="statistics-title">
+                    <div class="page-heading statistics-page-heading"><div><p class="eyebrow">LAPORAN TABUNGAN</p><h1 id="statistics-title" tabindex="-1">Statistik<span class="heading-dot">.</span></h1><p class="page-description">Lihat perkembangan setoran, penarikan, dan rutinitas menabungmu.</p></div><span class="page-symbol" aria-hidden="true"><svg class="icon"><use href="#i-chart"/></svg></span></div>
+                    <div class="statistics-filter-panel">
+                        <div class="filter-panel-heading"><span class="filter-panel-icon" aria-hidden="true"><svg class="icon"><use href="#i-history"/></svg></span><div><h2>Pilih periode laporan</h2><p>Filter ini hanya berlaku di Statistik.</p></div></div>
+                        <div class="period-controls">
+                            <label for="report-month"><span>Periode</span><select id="report-month"></select></label>
+                            <label for="report-album"><span>Album</span><select id="report-album"></select></label>
+                        </div>
+                    </div>
+                    <div id="monthly-report"></div>
+                </section>
+                <footer class="app-footer"><span>sadaku. <span>Pencatatan tabungan pribadi.</span></span><span id="save-status">Catatanmu tersimpan</span></footer>
+            </div>
+            <noscript><div class="connection-error">Aktifkan JavaScript untuk mengelola album dan catatan Sadaku.</div></noscript>
+        </main>
+    </div>
+
+    <dialog id="album-dialog" aria-labelledby="album-dialog-title">
+        <div class="dialog-heading"><div><p class="eyebrow">ALBUM TARGET</p><h2 id="album-dialog-title">Buat album baru</h2></div><button type="button" class="icon-button" data-close aria-label="Tutup formulir album"><svg class="icon"><use href="#i-close"/></svg></button></div>
+        <form id="album-form">
+            <input type="hidden" name="id">
+            <div id="cover-preview" class="cover-preview" data-color="sage"><img id="preview-image" src="assets/images/album-cover.svg" alt="Pratinjau sampul album"><span id="preview-caption">Tempat untuk impianmu.</span></div>
+            <div class="upload-row"><label class="upload-button"><svg class="icon"><use href="#i-image"/></svg>Pilih foto sendiri<input id="album-image" type="file" name="image" accept="image/jpeg,image/png,image/webp"></label><span>JPG, PNG, WebP · maks. 5 MB</span></div>
+            <label id="remove-image-label" class="checkbox-label" hidden><input type="checkbox" name="remove_image" value="1">Hapus foto saat ini</label>
+            <fieldset class="color-field"><legend>Warna album</legend><label class="color-choice" data-color="sage"><input type="radio" name="color" value="sage" checked><span class="sr-only">Hijau sage</span></label><label class="color-choice" data-color="peach"><input type="radio" name="color" value="peach"><span class="sr-only">Peach</span></label><label class="color-choice" data-color="lilac"><input type="radio" name="color" value="lilac"><span class="sr-only">Lilac</span></label><label class="color-choice" data-color="sand"><input type="radio" name="color" value="sand"><span class="sr-only">Pasir</span></label></fieldset>
+            <label class="field-label" for="album-name">Nama album</label><input id="album-name" name="name" type="text" placeholder="Misalnya, iPhone 17 Pro Max" maxlength="70" required>
+            <div class="form-grid"><div><label class="field-label" for="album-target">Nominal target</label><div class="money-input"><span>Rp</span><input id="album-target" name="target" type="number" inputmode="numeric" min="1" max="1000000000000" step="1" placeholder="25000000" required></div></div><div><label class="field-label" for="album-deadline">Target tanggal <span>(opsional)</span></label><input id="album-deadline" name="deadline" type="date" min="1900-01-01" max="2200-12-31"></div></div>
+            <label class="field-label" for="album-motivation">Kenapa kamu ingin mencapainya? <span>(opsional)</span></label><textarea id="album-motivation" name="motivation" maxlength="180" rows="2" placeholder="Biar perjalanan kerja lebih nyaman setiap hari."></textarea>
+            <p class="field-help">Alasan ini akan menemanimu di halaman album.</p>
+            <p class="form-error" role="alert"></p><div class="dialog-actions"><button type="button" class="button button-neutral" data-close>Batal</button><button type="submit" class="button button-primary">Simpan album</button></div>
+        </form>
+    </dialog>
+
+    <dialog id="entry-dialog" aria-labelledby="entry-dialog-title">
+        <div class="dialog-heading"><div><p class="eyebrow">CATATAN UANG</p><h2 id="entry-dialog-title">Catat uang</h2></div><button type="button" class="icon-button" data-close aria-label="Tutup formulir catatan"><svg class="icon"><use href="#i-close"/></svg></button></div>
+        <form id="entry-form">
+            <input type="hidden" name="id">
+            <fieldset class="entry-types"><legend class="sr-only">Jenis catatan</legend><label><input type="radio" name="type" value="deposit" checked><svg class="icon"><use href="#i-in"/></svg>Setoran</label><label><input type="radio" name="type" value="withdrawal"><svg class="icon"><use href="#i-out"/></svg>Penarikan</label></fieldset>
+            <label class="field-label" for="entry-album">Album tujuan</label><select id="entry-album" name="album_id" required></select>
+            <label class="field-label" for="entry-amount">Nominal</label><div class="money-input"><span>Rp</span><input id="entry-amount" name="amount" type="number" inputmode="numeric" min="1" max="1000000000000" step="1" placeholder="50000" required></div>
+            <label class="field-label" for="entry-date">Tanggal</label><input id="entry-date" name="date" type="date" min="1900-01-01" required>
+            <label class="field-label" for="entry-note">Catatan <span>(opsional)</span></label><input id="entry-note" name="note" type="text" maxlength="120" placeholder="Misalnya, sisihan uang minggu ini">
+            <p id="entry-balance-hint" class="field-help"></p>
+            <p class="form-error" role="alert"></p><div class="dialog-actions"><button type="button" class="button button-neutral" data-close>Batal</button><button type="submit" class="button button-primary">Simpan catatan</button></div>
+        </form>
+    </dialog>
+
+    <dialog id="delete-dialog" class="small-dialog" aria-labelledby="delete-title">
+        <div class="delete-symbol"><svg class="icon"><use href="#i-trash"/></svg></div><h2 id="delete-title">Hapus data ini?</h2><p id="delete-description" class="delete-description"></p>
+        <p class="form-error" role="alert"></p><div class="dialog-actions"><button type="button" class="button button-neutral" data-close>Batal</button><button id="confirm-delete" type="button" class="button button-danger">Ya, hapus</button></div>
+    </dialog>
+    <div id="toast" class="toast" role="status" hidden></div>
+</body>
+</html>
