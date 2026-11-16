@@ -11,7 +11,7 @@ set -eu
 
 if [ "${#APP_KEY}" -lt 32 ]; then
     echo 'APP_KEY harus minimal 32 karakter.' >&2
-    exit 1
+    exit 1  
 fi
 case "$APP_USER" in
     *[!a-zA-Z0-9_-]*|'') echo 'APP_USER hanya boleh berisi huruf, angka, garis bawah, dan tanda minus.' >&2; exit 1 ;;
@@ -23,6 +23,14 @@ esac
 if [ "${APP_ENV:-}" != 'production' ]; then
     echo 'Container ini harus memakai APP_ENV=production.' >&2
     exit 1
+fi
+
+# Aktifkan hanya pada host container yang terus berjalan, bukan function tidur.
+if [ "${REMINDERS_WORKER:-false}" = 'true' ]; then
+    : "${VAPID_PUBLIC_KEY:?Isi VAPID_PUBLIC_KEY untuk pengingat}"
+    : "${VAPID_PRIVATE_KEY:?Isi VAPID_PRIVATE_KEY untuk pengingat}"
+    : "${VAPID_SUBJECT:?Isi VAPID_SUBJECT untuk pengingat}"
+    php /app/scripts/send-reminders.php --watch &
 fi
 
 exec "$@"

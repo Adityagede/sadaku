@@ -1,4 +1,5 @@
 node_modules/
+vendor/
 .npm-cache/
 .env
 .env.*
@@ -17,15 +18,54 @@ storage/*
 *.pfx
 credentials*.json
 service-account*.json
+.git-credentials
+.netrc
+.npmrc
+.pypirc
+.htpasswd
+auth.json
+id_rsa
+id_ed25519
+*.jks
+*.keystore
+*.p8
 
 # Data lokal, backup, dan log
 backups/
 database/backups/
+*.sql
+!/database/schema.sql
 *.sql.gz
 *.dump
 *.sqlite
 *.sqlite3
 *.log
+*.bak
+*.tmp
+*.temp
+
+# Hasil build, cache pengujian, dan binary lokal
+/dist/
+/build/
+/coverage/
+.cache/
+.phpunit.cache/
+.phpunit.result.cache
+*.tsbuildinfo
+*.exe
+*.dll
+*.msi
+*.so
+*.dylib
+*.pdb
+
+# Arsip lokal / salinan distribusi
+*.zip
+*.7z
+*.rar
+*.tar
+*.tar.gz
+*.tgz
 
 # File sistem operasi
 .DS_Store

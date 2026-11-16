@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 require __DIR__ . '/database.php';
 require __DIR__ . '/csrf.php';
+require __DIR__ . '/push.php';
+require __DIR__ . '/app-settings.php';
 date_default_timezone_set('Asia/Jakarta');
 header('X-Content-Type-Options: nosniff');
 header('Cache-Control: no-store');
@@ -49,6 +51,33 @@ function date_input(string $key, bool $required = false): ?string
     return $value;
 }
 
+function plan_input(string $prefix = ''): array
+{
+    $frequency = text_input($prefix . 'frequency', 10, true);
+    if (!in_array($frequency, ['daily', 'weekly', 'monthly'], true)) throw new DomainException('Pilih jadwal harian, mingguan, atau bulanan.', 422);
+    $amount = money_input($prefix . 'amount');
+    $start = date_input($prefix . 'start_date', true);
+    $day = text_input($prefix . 'schedule_day', 2, true);
+    if (!ctype_digit($day) || ($frequency === 'weekly' && (int) $day > 6) || ($frequency === 'monthly' && ((int) $day < 1 || (int) $day > 31))) throw new DomainException('Hari atau tanggal jadwal tidak valid.', 422);
+    $time = text_input($prefix . 'reminder_time', 5, true);
+    if (!preg_match('/^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/D', $time)) throw new DomainException('Jam pengingat harus valid.', 422);
+    $reminder = text_input($prefix . 'reminder_enabled', 1);
+    $paused = text_input($prefix . 'paused', 1);
+    if (!in_array($reminder, ['', '0', '1'], true) || !in_array($paused, ['', '0', '1'], true)) throw new DomainException('Pengaturan rencana tidak valid.', 422);
+    return [$frequency, $amount, $start, $frequency === 'daily' ? 1 : (int) $day, $reminder === '1' ? 1 : 0, $time, $paused === '1' ? 1 : 0];
+}
+
+function save_album_plan(PDO $db, string $id, ?array $plan): void
+{
+    if ($plan === null) {
+        $db->prepare('DELETE FROM saving_plans WHERE album_id=?')->execute([$id]);
+        return;
+    }
+    $db->prepare('INSERT INTO saving_plans(album_id,frequency,amount,start_date,schedule_day,reminder_enabled,reminder_time,paused) VALUES(?,?,?,?,?,?,?,?)
+        ON DUPLICATE KEY UPDATE frequency=VALUES(frequency),amount=VALUES(amount),start_date=VALUES(start_date),schedule_day=VALUES(schedule_day),reminder_enabled=VALUES(reminder_enabled),reminder_time=VALUES(reminder_time),paused=VALUES(paused)')
+        ->execute([$id, ...$plan]);
+}
+
 try {
     if ((int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > 4352 * 1024) {
         throw new DomainException('Ukuran unggahan terlalu besar. Pilih gambar maksimal 4 MB.', 413);
@@ -62,7 +91,7 @@ try {
     }
 
     if ($method === 'GET' && $action === 'state') {
-        respond(['csrf' => $csrf] + snapshot($db));
+        respond(['csrf' => $csrf, 'push' => push_status(), 'settings' => public_app_settings()] + snapshot($db));
     }
 
     if ($method === 'GET' && $action === 'image') {
@@ -86,6 +115,44 @@ try {
         throw new DomainException('Sesi halaman berubah. Muat ulang halaman lalu coba lagi.', 403);
     }
 
+    if ($action === 'save_plan') {
+        $id = text_input('album_id', 32, true);
+        $plan = plan_input();
+        $db->beginTransaction();
+        require_record($db, 'albums', $id, true);
+        save_album_plan($db, $id, $plan);
+        $db->commit();
+        respond(snapshot($db));
+    }
+
+    if ($action === 'subscribe_push') {
+        if (!push_status()['configured']) throw new DomainException('Layanan pengingat belum dikonfigurasi di server. Rencana tetap dapat digunakan.', 503);
+        $subscription = validate_subscription(text_input('subscription', 4096, true));
+        $db->prepare('INSERT INTO push_subscriptions(id,endpoint_hash,subscription,created_at) VALUES(?,?,?,NOW()) ON DUPLICATE KEY UPDATE subscription=VALUES(subscription)')
+            ->execute([bin2hex(random_bytes(16)), hash('sha256', $subscription['endpoint']), json_encode($subscription, JSON_THROW_ON_ERROR)]);
+        respond(['ok' => true]);
+    }
+
+    if ($action === 'unsubscribe_push' || $action === 'test_push' || $action === 'push_device') {
+        $endpoint = text_input('endpoint', 2048, true);
+        $hash = hash('sha256', $endpoint);
+        if ($action === 'unsubscribe_push') {
+            $db->prepare('DELETE FROM push_subscriptions WHERE endpoint_hash=?')->execute([$hash]);
+            respond(['ok' => true]);
+        }
+        $statement = $db->prepare('SELECT subscription FROM push_subscriptions WHERE endpoint_hash=?');
+        $statement->execute([$hash]);
+        $stored = $statement->fetchColumn();
+        if ($action === 'push_device') respond(['registered' => (bool) $stored]);
+        if (!$stored) throw new DomainException('Aktifkan notifikasi perangkat ini terlebih dahulu.', 422);
+        $report = send_push(json_decode($stored, true, 8, JSON_THROW_ON_ERROR), ['title' => 'Pengingat Sadaku siap', 'body' => 'Notifikasi perangkat ini sudah terhubung. Jadwal mengikuti rencana menabungmu.', 'url' => './', 'tag' => 'sadaku-test']);
+        if (!$report->isSuccess()) {
+            if ($report->isSubscriptionExpired()) $db->prepare('DELETE FROM push_subscriptions WHERE endpoint_hash=?')->execute([$hash]);
+            throw new DomainException('Notifikasi uji belum terkirim. Coba aktifkan ulang notifikasi perangkat.', 502);
+        }
+        respond(['ok' => true]);
+    }
+
     if ($action === 'save_album') {
         $id = text_input('id', 32);
         $name = text_input('name', 70, true);
@@ -95,6 +162,13 @@ try {
         $color = text_input('color', 10, true);
         if (!in_array($color, ['sage', 'peach', 'lilac', 'sand'], true)) {
             throw new DomainException('Warna sampul tidak valid.', 422);
+        }
+        $updatePlan = array_key_exists('plan_enabled', $_POST);
+        $plan = null;
+        if ($updatePlan) {
+            $enabled = text_input('plan_enabled', 1, true);
+            if (!in_array($enabled, ['0', '1'], true)) throw new DomainException('Pengaturan rencana tidak valid.', 422);
+            if ($enabled === '1') $plan = plan_input('plan_');
         }
 
         $image = null;
@@ -133,6 +207,7 @@ try {
             $statement = $db->prepare('INSERT INTO albums(name,target,deadline,motivation,color,image,image_type,image_version,id,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)');
             $statement->execute([...$values, $id, (new DateTimeImmutable())->format('Y-m-d H:i:s.u')]);
         }
+        if ($updatePlan) save_album_plan($db, $id, $plan);
         $db->commit();
         respond(['savedId' => $id] + snapshot($db));
     }
@@ -154,11 +229,7 @@ try {
             throw new DomainException('Jenis catatan tidak valid.', 422);
         }
         $amount = money_input('amount');
-        $date = date_input('date', true);
         $note = text_input('note', 120);
-        if ($date > date('Y-m-d')) {
-            throw new DomainException('Tanggal catatan tidak boleh melewati hari ini.', 422);
-        }
         $db->beginTransaction();
         // Semua perubahan catatan mengunci album lebih dulu agar validasi saldo konsisten.
         require_record($db, 'albums', $albumId, true);
@@ -167,11 +238,15 @@ try {
             if ($existing['album_id'] !== $albumId) {
                 throw new DomainException('Album catatan tidak dapat dipindahkan saat mengedit.', 422);
             }
-            $db->prepare('UPDATE entries SET type=?, amount=?, date=?, note=? WHERE id=?')->execute([$type, $amount, $date, $note, $id]);
+            // Editing an old record preserves its date, including pre-existing backdated records.
+            $db->prepare('UPDATE entries SET type=?, amount=?, note=? WHERE id=?')->execute([$type, $amount, $note, $id]);
         } else {
+            // The server stamps the date at save time, including a form left open past midnight.
+            $recordedAt = new DateTimeImmutable('now', new DateTimeZone('Asia/Jakarta'));
+            $date = $recordedAt->format('Y-m-d');
             $id = bin2hex(random_bytes(12));
             $db->prepare('INSERT INTO entries(id,album_id,type,amount,date,note,created_at) VALUES(?,?,?,?,?,?,?)')
-                ->execute([$id, $albumId, $type, $amount, $date, $note, (new DateTimeImmutable())->format('Y-m-d H:i:s.u')]);
+                ->execute([$id, $albumId, $type, $amount, $date, $note, $recordedAt->format('Y-m-d H:i:s.u')]);
         }
         validate_balance($db, $albumId);
         $db->commit();

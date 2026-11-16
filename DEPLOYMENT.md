@@ -14,6 +14,24 @@ Panduan resmi: [PHP dengan Docker](https://vercel.com/kb/guide/deploy-php-on-ver
 - Batas gambar menjadi 4 MiB (ditulis 4 MB di antarmuka). Batas keseluruhan formulir 4352 KiB memberi ruang metadata sambil berada di bawah batas payload Functions 4,5 MB.
 - Build image, autentikasi Caddy, TLS database online, dan pengujian Vercel harus diverifikasi di lingkungan yang mempunyai Docker dan akses layanan tersebut. Berkas konfigurasi saja belum berarti situs sudah online.
 
+## Pengingat Web Push
+
+Image menyertakan library Web Push, `sw.js`, serta `scripts/send-reminders.php`. Jalankan ulang setup database atau impor tabel baru dari skema sebelum merilis perubahan ini. Tabel tambahan tidak mengubah atau menghapus album dan catatan lama.
+
+Buat kunci sekali menggunakan `composer install`, lalu `npm run push:setup -- https://domain-sadaku-anda` pada lingkungan lokal. Simpan `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, dan `VAPID_SUBJECT` dari `.env` langsung ke pengaturan environment hosting; jangan menyalinnya ke kode, chat, atau Git. Gunakan domain HTTPS aplikasi atau alamat kontak `mailto:` sebagai subject produksi. Kunci harus sama pada web server dan penjadwal, serta stabil setelah redeploy. Kunci privat tidak dikirim ke browser.
+
+Untuk host container yang terus berjalan, isi `REMINDERS_WORKER=true` agar entrypoint menjalankan penjadwal setiap menit bersama server. Untuk layanan yang bisa tidur atau membatasi durasi proses (termasuk hosting function), gunakan scheduler/worker yang terus tersedia di luar proses web. Jangan mengandalkan proses latar belakang container function untuk jadwal tepat waktu.
+
+Scheduler eksternal perlu menjalankan perintah berikut setiap menit dari source/image aplikasi yang sama, dengan environment database dan VAPID yang sama:
+
+```sh
+php /app/scripts/send-reminders.php
+```
+
+Contoh cron pada host Linux yang menyimpan aplikasi di `/app`: `* * * * * cd /app && php scripts/send-reminders.php`. Atur rahasia melalui pengelola service/scheduler. Skrip mengakses MySQL langsung; tidak ada endpoint publik untuk memicu pengiriman. Penguncian MySQL mencegah penjadwal yang tumpang tindih, dan tabel pengiriman mencegah pengiriman ulang normal untuk album, perangkat, dan tanggal yang sama.
+
+Halaman menggunakan HTTPS dan setiap perangkat diaktifkan melalui **titik tiga → Pengaturan → Aktifkan notifikasi**. Jalankan notifikasi uji sebelum menganggap pengiriman produksi siap. Verifikasi pengingat terjadwal dengan tab tertutup, rencana dijeda, setoran terpenuhi, dan target tercapai. Dukungan penerimaan bergantung pada browser, sistem operasi, koneksi, dan pengaturan perangkat.
+
 ## 1. Siapkan database online
 
 Gunakan MySQL 8+ yang mendukung koneksi dari Vercel melalui TLS. Pilih lokasi database yang dekat dengan lokasi function untuk mengurangi waktu koneksi.
@@ -44,6 +62,8 @@ Isi nilai di Vercel **Project Settings → Environment Variables**, untuk Produc
 | `APP_PASSWORD_HASH` | Hash bcrypt password pemilik, bukan password mentah |
 | `APP_KEY` | Kunci acak minimal 32 karakter; gunakan hasil perintah di bawah |
 | `PORT` | `80` (default image) |
+| `APP_RATE_URL` | Opsional: tautan HTTPS halaman Google Play Sadaku; kosong menampilkan Belum tersedia |
+| `APP_SUPPORT_URL` | Opsional: tautan HTTPS dukungan developer; kosong menampilkan Belum tersedia |
 
 Pada produksi, TLS database aktif secara default jika `DB_SSL` tidak diisi. Jika penyedia memberikan CA khusus, `DB_SSL_CA_PEM` menerima teks PEM dengan newline asli dari pengaturan Vercel atau karakter literal `\n`. Verifikasi sertifikat tetap aktif. Jangan menggantinya dengan `DB_SSL=false` untuk mengatasi kesalahan sertifikat.
 
@@ -63,7 +83,7 @@ Pasang dan jalankan Docker Desktop. Dari root proyek:
 docker build -t sadaku .
 ```
 
-Docker memakai CSS hasil build yang sudah disertakan. `assets/css/interface.css` adalah stylesheet sumber terpisah untuk permukaan, navigasi, dan kredit developer. Jika styling Tailwind berubah, jalankan `npm install` dan `npm run build` sebelum commit.
+Docker memakai CSS hasil build yang sudah disertakan. `assets/css/interface.css` adalah stylesheet sumber terpisah untuk permukaan, navigasi, Pengaturan, dan kredit developer; `assets/css/theme.css` mengatur tema aplikasi. `assets/js/theme.js` dimuat sebelum stylesheet agar tema pilihan tidak berkedip saat halaman dibuka. Jika styling Tailwind berubah, jalankan `npm install` dan `npm run build` sebelum commit.
 
 Buat hash password pemilik dengan prompt interaktif Caddy; password tidak ditulis sebagai argumen command:
 

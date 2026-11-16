@@ -1,14 +1,19 @@
 FROM dunglas/frankenphp:1-php8.4-alpine
 
 WORKDIR /app
-RUN install-php-extensions pdo_mysql mbstring fileinfo \
+RUN install-php-extensions pdo_mysql mbstring fileinfo curl bcmath \
     && cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
 COPY deployment/php.ini /usr/local/etc/php/conf.d/zz-sadaku.ini
 COPY Caddyfile /etc/caddy/Caddyfile
 COPY php ./php
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+COPY scripts/send-reminders.php ./scripts/send-reminders.php
 COPY index.html ./public/index.html
-COPY assets/css/style.css assets/css/interface.css ./public/assets/css/
+COPY sw.js ./public/sw.js
+COPY assets/css/style.css assets/css/interface.css assets/css/theme.css ./public/assets/css/
 COPY assets/js ./public/assets/js
 COPY assets/images ./public/assets/images
 COPY deployment/api.php ./public/php/api.php

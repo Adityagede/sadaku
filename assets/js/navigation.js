@@ -1,4 +1,6 @@
-const routes = { overview: 'ringkasan', albums: 'album', history: 'riwayat', statistics: 'statistik' };
+import { DEFAULT_ACTIVITY_FILTERS } from './activity.js';
+
+const routes = { overview: 'ringkasan', albums: 'album', history: 'riwayat', statistics: 'statistik', settings: 'pengaturan' };
 
 export function createNavigationState() {
     return {
@@ -7,9 +9,18 @@ export function createNavigationState() {
         filter: 'all',
         search: '',
         statistics: { period: 'current', albumId: 'all' },
-        history: { period: 'current', albumId: 'all' },
-        detailPeriod: 'current'
+        history: { ...DEFAULT_ACTIVITY_FILTERS },
+        historyLimit: 30,
+        detailLimit: 30,
+        settingsReturn: { view: 'overview', albumId: null }
     };
+}
+
+export function applyRoute(state, route) {
+    const previous = state.view === 'settings' ? state.settingsReturn : { view: state.view, albumId: state.albumId };
+    if (route.view === 'settings' && state.view !== 'settings') state.settingsReturn = previous;
+    if (route.view === 'detail' && route.albumId !== previous.albumId) state.detailLimit = 30;
+    Object.assign(state, route);
 }
 
 export function parseRoute(hash) {
@@ -21,9 +32,4 @@ export function parseRoute(hash) {
 
 export function routeFor(view, albumId = null) {
     return view === 'detail' ? `album/${albumId}` : routes[view] || routes.overview;
-}
-
-export function copyStatisticsToHistory(state) {
-    // Salin nilai, agar perubahan filter di Riwayat tidak ikut mengubah Statistik.
-    state.history = { ...state.statistics };
 }

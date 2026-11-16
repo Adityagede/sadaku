@@ -9,6 +9,7 @@
 !assets/css/
 !assets/css/style.css
 !assets/css/interface.css
+!assets/css/theme.css
 !assets/js/
 !assets/js/*.js
 !assets/images/
@@ -17,3 +18,8 @@
 !deployment/api.php
 !deployment/entrypoint.sh
 !deployment/php.ini
+!composer.json
+!composer.lock
+!sw.js
+!scripts/
+!scripts/send-reminders.php

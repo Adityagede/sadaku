@@ -27,6 +27,8 @@ const testEnvironment = {
     DB_PASSWORD: '',
     DB_SSL: 'false',
     APP_ENV: 'local',
+    APP_RATE_URL: 'https://play.google.com/store/apps/details?id=example.sadaku',
+    APP_SUPPORT_URL: 'https://example.org/support',
     SADAKU_ISOLATED_TEST: '1',
 };
 let mysql;
@@ -69,6 +71,8 @@ try {
         timeout: 60000, maxBuffer: 1024 * 1024,
     });
     console.log('Mode produksi: ' + productionResult.stdout.trim());
+    const reminders = await run('php', ['scripts/reminder-dispatch.test.php'], { cwd: root, env: testEnvironment, timeout: 15000 });
+    console.log(reminders.stdout.trim());
 } catch (error) {
     console.error(error.stderr || error.message);
     process.exitCode = 1;

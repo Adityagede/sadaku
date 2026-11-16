@@ -100,6 +100,18 @@ function snapshot(PDO $db): array
     }
     unset($album);
 
+    $plans = [];
+    foreach ($db->query('SELECT * FROM saving_plans') as $row) {
+        $plans[$row['album_id']] = [
+            'frequency' => $row['frequency'], 'amount' => (int) $row['amount'],
+            'startDate' => $row['start_date'], 'scheduleDay' => (int) $row['schedule_day'],
+            'reminderEnabled' => (bool) $row['reminder_enabled'], 'reminderTime' => substr($row['reminder_time'], 0, 5),
+            'paused' => (bool) $row['paused'],
+        ];
+    }
+    foreach ($albums as &$album) $album['plan'] = $plans[$album['id']] ?? null;
+    unset($album);
+
     $entries = $db->query('SELECT id, album_id AS albumId, type, amount, date, note,
         created_at AS createdAt FROM entries ORDER BY date DESC, created_at DESC, id DESC')->fetchAll();
     foreach ($entries as &$entry) {

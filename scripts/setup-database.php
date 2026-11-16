@@ -18,7 +18,7 @@ try {
             $db->exec($statement);
         }
     }
-    echo "Tabel albums dan entries siap. Tabel yang sudah ada tidak dihapus.\n";
+    echo "Tabel album, catatan, rencana, dan pengingat siap. Tabel yang sudah ada tidak dihapus.\n";
 } catch (Throwable $error) {
     $message = $error instanceof PDOException
         ? 'Tabel belum dapat disiapkan. Periksa izin CREATE dan REFERENCES akun database serta kompatibilitas MySQL.'

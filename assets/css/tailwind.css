@@ -47,7 +47,6 @@
     .header-location { display: none; }
     .header-right { @apply flex items-center gap-4; }
     .header-date { @apply hidden text-xs text-muted sm:block; }
-    .personal-badge { @apply rounded-full border border-[#dce3d3] bg-[#eef3e6] px-3 py-1.5 text-[10px] font-medium text-forest; }
     .main-content { @apply mx-auto max-w-[1350px] px-5 pb-32 pt-7 sm:px-8 sm:pt-9 lg:px-10; }
     .page-heading { @apply mb-7 flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-center; }
     .eyebrow { @apply text-[9px] font-semibold uppercase leading-5 tracking-[0.11em] text-muted sm:text-[10px]; }
@@ -156,91 +155,11 @@
     .entry-actions { @apply flex flex-col sm:flex-row; }
     .entry-actions .icon-button { width: 32px; height: 32px; }
     .entry-actions .icon { width: 14px; height: 14px; }
-    .page-symbol { @apply hidden h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-[#d6e3cd] bg-[#e6efdb] text-forest sm:flex; box-shadow: 0 2px 3px #183d2c0d; }
-    .page-symbol .icon { width: 26px; height: 26px; }
-    .statistics-page-heading { @apply mb-6; }
-    .statistics-filter-panel { @apply mb-7 grid gap-5 rounded-[20px] border border-[#d5dfd5] bg-white p-4 sm:p-5 xl:grid-cols-[1fr_1.5fr] xl:items-center; box-shadow: var(--surface-shadow); }
-    .filter-panel-heading { @apply flex min-w-0 items-center gap-3; }
-    .filter-panel-icon { @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#f0f4e9] text-[#607a4b]; }
-    .filter-panel-icon .icon { width: 18px; height: 18px; }
-    .filter-panel-heading h2 { @apply text-sm font-semibold; }
-    .filter-panel-heading p { @apply mt-1 text-[10px] leading-5 text-muted; }
-    .statistics-filter-panel .period-controls { @apply mb-0 max-w-none grid-cols-1 sm:grid-cols-2; }
-    .statistics-period-heading { @apply mb-4 flex flex-wrap items-end justify-between gap-3; }
-    .statistics-period-heading h2 { @apply mt-1 text-lg font-semibold tracking-tight sm:text-xl; }
-    .period-badges { @apply flex flex-wrap items-center gap-2; }
-    .period-state { @apply rounded-full border border-[#d8e1d5] bg-white px-2.5 py-1 text-[10px] text-muted; }
     .statistics-metrics { @apply mb-5 grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4; }
-    .statistics-metrics .period-metric { @apply relative rounded-[20px] border border-[#d6dfd8] bg-white px-4 pb-5 pt-4 sm:px-5 sm:pb-6 sm:pt-5; box-shadow: var(--surface-shadow); }
-    .statistics-metrics .period-metric > span:not(.metric-symbol) { @apply min-h-8 pr-9 text-[11px] font-medium sm:text-xs; }
-    .statistics-metrics .period-metric > strong { @apply mt-3 text-[22px] leading-tight sm:text-[26px]; }
-    .statistics-metrics .metric-symbol { @apply absolute right-3 top-3 m-0 flex h-8 w-8 items-center justify-center rounded-xl bg-[#edf3e5] text-[#577b45] sm:right-4 sm:top-4; }
-    .statistics-metrics .metric-symbol .icon { width: 16px; height: 16px; }
-    .statistics-metrics .withdrawal-metric .metric-symbol { @apply bg-[#f9eee4] text-[#aa754b]; }
-    .statistics-metrics .net-metric { @apply col-span-2 border-[#c7d6b7] bg-[#eaf1df] sm:col-span-1; }
-    .statistics-metrics .net-metric .metric-symbol { @apply bg-[#d8e5c6] text-[#41633a]; }
-    .statistics-report-footer { @apply flex flex-col gap-4 border-t border-[#e3eade] bg-[#f8faf5] p-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between; }
-    .statistics-report-footer h3 { @apply text-sm font-semibold; }
-    .statistics-report-footer p { @apply mt-1 text-[11px] leading-5 text-muted; }
-    .statistics-report-footer .button { @apply w-full lg:w-auto; }
-    .history-day + .history-day { @apply border-t border-[#dfe7db]; }
-    .history-day-heading { @apply flex items-center justify-between gap-3 border-b border-[#e6ece2] bg-[#f7f9f3] px-4 py-3 sm:px-5; }
-    .history-day-heading h3 { @apply text-xs font-semibold; }
-    .history-day-heading span { @apply text-[10px] text-muted; }
-    .history-day .entry-row:last-child { @apply border-b-0; }
-    .period-controls { @apply mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:max-w-2xl; }
-    .period-controls label { @apply min-w-0; }
-    .period-controls label > span { @apply mb-2 block text-[11px] font-medium text-muted; }
-    .period-controls select { @apply min-h-11 text-base sm:text-sm; box-shadow: 0 1px 2px #183d2c0a; }
-    .report-surface { @apply min-w-0 overflow-hidden rounded-[20px] border bg-white; border-color: var(--surface-border); box-shadow: var(--surface-shadow); }
-    .report-period-heading { @apply flex flex-wrap items-center justify-between gap-3 px-5 pb-4 pt-5 sm:px-6; }
-    .report-period-heading h3, .history-period-heading h2 { @apply text-base font-semibold tracking-tight sm:text-lg; }
-    .count-badge { @apply inline-flex shrink-0 rounded-full border border-[#dce5d4] bg-[#f0f5e9] px-2.5 py-1 text-[10px] font-medium text-forest; }
-    .period-summary { @apply grid min-w-0 grid-cols-1 divide-y divide-[#e6ece2] border-y border-[#e3eade] bg-[#f8faf5] sm:grid-cols-3 sm:divide-x sm:divide-y-0; }
-    .period-metric { @apply min-w-0 px-5 py-3.5 sm:px-6 sm:py-5; }
-    .period-metric > span { @apply mb-1.5 block text-[11px] text-muted; }
-    .period-metric > strong { @apply block text-lg font-semibold tracking-tight tabular-nums; overflow-wrap: anywhere; }
-    .net-metric strong { @apply text-forest; }
-    .report-body { @apply grid min-w-0 gap-6 p-5 sm:gap-7 sm:p-7 xl:grid-cols-[1.4fr_1fr]; }
-    .savings-chart { @apply min-w-0; }
-    .chart-heading { @apply mb-5 flex flex-wrap items-center justify-between gap-2; }
-    .chart-heading h3 { @apply mt-1 text-base font-semibold tracking-tight; }
-    .chart-heading > span { @apply text-[10px] text-muted; }
     .month-chart { @apply grid grid-cols-6 gap-1; }
-    .month-bar { @apply flex min-w-0 flex-col items-center rounded-xl px-1 pb-2 pt-2 transition-colors hover:bg-[#f1f5ec]; }
-    .month-bar[aria-pressed="true"] { @apply bg-[#eaf1e0]; box-shadow: inset 0 0 0 1px #c9d9b7; }
-    .chart-value { @apply mb-1.5 block w-full truncate text-center text-[9px] font-medium text-muted sm:text-[10px]; }
-    .month-bar svg { display: block; width: 100%; max-width: 46px; height: 156px; }
-    .bar-track { fill: #f0f4eb; }
-    .bar-fill { fill: #8aa56d; }
-    .month-bar.is-current .bar-fill, .month-bar[aria-pressed="true"] .bar-fill { fill: #325f43; }
-    .chart-month { @apply mt-2 text-[11px] font-semibold; }
-    .chart-year { @apply mt-0.5 text-[9px] text-muted; }
-    .chart-help { @apply mt-4 text-[10px] leading-5 text-muted; }
-    .comparison-box { @apply flex min-w-0 flex-col justify-center rounded-2xl border border-[#dce6d4] bg-[#f2f6ed] p-5 sm:p-6; }
-    .comparison-box h3 { @apply mb-2 mt-3 text-xl font-semibold leading-7 tracking-tight; }
-    .comparison-box > p:not(.eyebrow) { @apply text-xs leading-6; }
-    .comparison-box > span { @apply mt-4 border-t border-[#dbe5d1] pt-3 text-[10px] leading-5 text-muted; }
-    .comparison-box[data-trend="decrease"] { @apply border-[#e7d9ca] bg-[#faf4ec]; }
-    .comparison-box[data-trend="decrease"] h3 { color: #926a43; }
-    .routine-box { @apply grid gap-4 border-t border-[#e3eade] px-5 py-5 sm:px-6 lg:grid-cols-2 lg:gap-6; }
-    .routine-box h3 { @apply mb-2 text-sm font-semibold; }
-    .routine-box p { @apply text-xs leading-6 text-muted; }
-    .routine-box strong { @apply font-medium text-ink; }
-    .routine-box span { @apply mt-1 block text-[10px] leading-5 text-muted; }
-    .history-period-heading { @apply mb-4 flex flex-wrap items-center justify-between gap-3; }
-    .history-summary { @apply mb-5 grid-cols-2 gap-px divide-y-0 overflow-hidden rounded-2xl border border-[#dce5d5] bg-[#dfe7d9] sm:grid-cols-3 sm:divide-x-0; box-shadow: 0 1px 2px #183d2c08; }
-    .history-summary .period-metric { @apply bg-white px-4 py-3.5; }
-    .history-summary .net-metric { @apply col-span-2 bg-[#f4f8ee] sm:col-span-1; }
-    .history-summary .period-metric > strong { @apply text-base sm:text-lg; }
-    .detail-period-controls { @apply max-w-none sm:items-end; }
-    .period-count { @apply pb-3 text-xs leading-5 text-muted; }
     .empty-entries { @apply px-6 py-9 text-center; }
     .empty-entries p { @apply mt-2 text-xs leading-6 text-muted; }
     .empty-entries .icon { @apply mx-auto mb-3 text-[#91a17d]; }
-    .app-footer { @apply mt-10 flex flex-col gap-2 border-t border-[#e0e5d9] py-5 text-[10px] text-muted sm:flex-row sm:justify-between; }
-    .app-footer > span:first-child { @apply font-semibold text-forest; }
-    .app-footer > span:first-child span { @apply ml-1 font-normal text-muted; }
     .detail-toolbar { @apply mb-6 flex flex-wrap items-center justify-between gap-3; }
     .detail-layout { @apply grid min-w-0 gap-6 rounded-[22px] border bg-white p-4 sm:p-6 lg:grid-cols-[0.9fr_1.2fr] lg:gap-8; border-color: var(--surface-border); box-shadow: var(--surface-shadow); }
     .detail-cover { @apply relative h-56 min-w-0 overflow-hidden rounded-xl sm:h-72 lg:h-full lg:min-h-80; }

@@ -31,7 +31,10 @@ try {
     }
     $db->query('SELECT id FROM albums LIMIT 0');
     $db->query('SELECT id FROM entries LIMIT 0');
-    echo "Koneksi MySQL berhasil. Tabel albums dan entries tersedia.\n";
+    $db->query('SELECT album_id FROM saving_plans LIMIT 0');
+    $db->query('SELECT id FROM push_subscriptions LIMIT 0');
+    $db->query('SELECT album_id FROM reminder_deliveries LIMIT 0');
+    echo "Koneksi MySQL berhasil. Tabel album, catatan, rencana, dan pengingat tersedia.\n";
 } catch (Throwable $error) {
     $message = $error instanceof PDOException
         ? 'MySQL terhubung, tetapi tabel belum siap. Jalankan php scripts/setup-database.php.'
