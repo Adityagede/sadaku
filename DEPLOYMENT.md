@@ -8,9 +8,9 @@ Panduan resmi: [PHP dengan Docker](https://vercel.com/kb/guide/deploy-php-on-ver
 
 - Berkas Docker, konfigurasi web server, dan direktori publik yang terpisah sudah disiapkan.
 - Hanya halaman, stylesheet, JavaScript, SVG bawaan, dan pembungkus API yang masuk direktori publik. `.env`, SQL, skrip pemeliharaan, serta kode internal tidak disajikan sebagai file statis.
-- Container meminta autentikasi HTTP Basic untuk halaman, API, dan gambar. Browser menampilkan dialog username/password milik pemilik. Ini bukan sistem akun banyak pengguna. Untuk mengakhiri akses, tutup seluruh sesi browser privat yang dipakai; belum ada tombol logout aplikasi.
+- Shell aplikasi (HTML, aset, dan service worker) dapat dibuka langsung untuk mode perangkat tanpa akun. Caddy meminta HTTP Basic pada seluruh path `/php/*`, termasuk API dan gambar server. Browser menampilkan dialog username/password ketika pengguna membuka data server pribadi. Ini bukan sistem akun banyak pengguna. Untuk mengakhiri akses server, tutup seluruh sesi browser privat yang dipakai; belum ada tombol logout aplikasi. Matcher `basic_auth` mengikuti [sintaks resmi Caddy](https://caddyserver.com/docs/caddyfile/directives/basic_auth); autentikasi aktual harus diverifikasi pada container sebelum rilis.
 - Token CSRF produksi memakai cookie bertanda tangan dengan `APP_KEY`, bukan sesi file container. Token berlaku 24 jam dan dapat divalidasi instance lain dengan kunci yang sama. Setelah token kedaluwarsa atau kunci diganti, muat ulang halaman.
-- Data dan gambar tetap disimpan dalam MySQL. Tidak ada data pengguna yang bergantung pada filesystem container.
+- Pada mode perangkat, data dan foto disimpan di IndexedDB browser, dengan cadangan/pemulihan JSON di perangkat. Mode server pribadi tetap memakai MySQL. Tidak ada data pengguna yang bergantung pada filesystem container. Data dari dua mode tidak dicampur otomatis.
 - Batas gambar menjadi 4 MiB (ditulis 4 MB di antarmuka). Batas keseluruhan formulir 4352 KiB memberi ruang metadata sambil berada di bawah batas payload Functions 4,5 MB.
 - Build image, autentikasi Caddy, TLS database online, dan pengujian Vercel harus diverifikasi di lingkungan yang mempunyai Docker dan akses layanan tersebut. Berkas konfigurasi saja belum berarti situs sudah online.
 
@@ -30,7 +30,7 @@ php /app/scripts/send-reminders.php
 
 Contoh cron pada host Linux yang menyimpan aplikasi di `/app`: `* * * * * cd /app && php scripts/send-reminders.php`. Atur rahasia melalui pengelola service/scheduler. Skrip mengakses MySQL langsung; tidak ada endpoint publik untuk memicu pengiriman. Penguncian MySQL mencegah penjadwal yang tumpang tindih, dan tabel pengiriman mencegah pengiriman ulang normal untuk album, perangkat, dan tanggal yang sama.
 
-Halaman menggunakan HTTPS dan setiap perangkat diaktifkan melalui **titik tiga → Pengaturan → Aktifkan notifikasi**. Jalankan notifikasi uji sebelum menganggap pengiriman produksi siap. Verifikasi pengingat terjadwal dengan tab tertutup, rencana dijeda, setoran terpenuhi, dan target tercapai. Dukungan penerimaan bergantung pada browser, sistem operasi, koneksi, dan pengaturan perangkat.
+Halaman menggunakan HTTPS dan setiap perangkat diaktifkan melalui **titik tiga → Pengaturan → Notifikasi → Aktifkan notifikasi**. Jalankan notifikasi uji sebelum menganggap pengiriman produksi siap. Verifikasi pengingat terjadwal dengan tab tertutup, rencana dijeda, setoran terpenuhi, dan target tercapai. Dukungan penerimaan bergantung pada browser, sistem operasi, koneksi, dan pengaturan perangkat.
 
 ## 1. Siapkan database online
 

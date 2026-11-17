@@ -13,7 +13,8 @@
         Cache-Control "private, no-store"
         -Server
     }
-    basic_auth {
+    @private_api path /php/*
+    basic_auth @private_api {
         {$APP_USER} {$APP_PASSWORD_HASH}
     }
     php_server

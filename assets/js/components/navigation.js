@@ -1,6 +1,10 @@
-import { DEFAULT_ACTIVITY_FILTERS } from './activity.js';
+import { DEFAULT_ACTIVITY_FILTERS } from '../domain/activity.js';
 
-const routes = { overview: 'ringkasan', albums: 'album', history: 'riwayat', statistics: 'statistik', settings: 'pengaturan' };
+const routes = { overview: 'ringkasan', albums: 'album', history: 'riwayat', statistics: 'statistik', settings: 'pengaturan', backup: 'cadangan' };
+
+export function isSettingsView(view) {
+    return view === 'settings' || view === 'backup';
+}
 
 export function createNavigationState() {
     return {
@@ -17,8 +21,9 @@ export function createNavigationState() {
 }
 
 export function applyRoute(state, route) {
-    const previous = state.view === 'settings' ? state.settingsReturn : { view: state.view, albumId: state.albumId };
-    if (route.view === 'settings' && state.view !== 'settings') state.settingsReturn = previous;
+    const fromSettings = isSettingsView(state.view);
+    const previous = fromSettings ? state.settingsReturn : { view: state.view, albumId: state.albumId };
+    if (isSettingsView(route.view) && !fromSettings) state.settingsReturn = previous;
     if (route.view === 'detail' && route.albumId !== previous.albumId) state.detailLimit = 30;
     Object.assign(state, route);
 }

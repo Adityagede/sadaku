@@ -1,14 +1,42 @@
 # Sadaku
 
-Aplikasi pribadi untuk mencatat uang dan menabung menuju album target. Stack: HTML, Tailwind CSS, JavaScript, PHP, dan MySQL.
+Aplikasi untuk mencatat uang dan menabung menuju album target. Mode awal langsung memakai penyimpanan browser tanpa akun. Stack: HTML, Tailwind CSS, JavaScript, IndexedDB, serta PHP/MySQL untuk server pribadi versi sebelumnya.
 
 Dikembangkan oleh **I GEDE ADITYA SUASTIKA PUTRA**.
+
+## Untuk developer
+
+Baca [panduan struktur proyek](docs/PROJECT_STRUCTURE.md) untuk lokasi kode per halaman, komponen bersama, aturan domain, dan penyimpanan. `assets/js/app.js` menghubungkan modul; pengujian berada di `tests/`, sementara alat pengembangan berada di `scripts/`. Pemeriksaan utama: `npm run check`, `npm run test:unit`, lalu `npm run build`.
+
+## Mata uang tabungan
+
+Mode **Di perangkat ini** mendukung mata uang berbeda untuk setiap album: IDR, USD, EUR, SGD, GBP, AUD, CAD, MYR, JPY, dan CHF. Pilih melalui dropdown di sebelah kiri input **Nominal target** saat membuat album. Mata uang dan album tersimpan sekaligus melalui **Simpan album**; membatalkan formulir tidak mengubah data. Setelah tersimpan, mata uang album tetap; buat album baru untuk mata uang lain. Tidak ada konversi kurs.
+
+USD/EUR dan mata uang dua desimal menerima input seperti `1250.50`; pecahan disimpan sebagai bilangan bulat dalam sen. IDR tetap memakai rupiah bulat sesuai perilaku sebelumnya, dan JPY memakai yen bulat. IDR menggunakan titik ribuan; mata uang lainnya menerima titik desimal dan koma ribuan. Format yang tidak sesuai ditolak. Mengganti mata uang pada draft album mengosongkan target dan nominal rencana agar nominal sebelumnya tidak berubah arti. Setoran, penarikan, dan rencana mengikuti mata uang album. Mengganti tujuan pencatatan ke mata uang lain mengosongkan nominal. Ringkasan memisahkan total per mata uang; Statistik memfilter mata uang sebelum menghitung laporan dan grafik. CSV campuran memiliki kolom mata uang per baris. Bahasa antarmuka tetap Indonesia dan zona waktu pencatatan/pengingat tetap WIB.
+
+Wallet versi 3 menyimpan kode mata uang pada setiap album. Wallet versi 1 dibaca sebagai IDR; versi 2 menurunkan mata uang wallet ke semua album tanpa mengubah nominal. Cadangan versi 3 menyertakan kode mata uang dan skala nominal setiap album; cadangan versi 1 dan 2 tetap dapat dipulihkan. Pratinjau pemulihan menampilkan mata uang yang akan menggantikan data perangkat. Versi aplikasi lama tidak dapat membaca wallet/cadangan versi 3.
+
+Server pribadi PHP/MySQL versi lama tetap menggunakan IDR; pilihan mata uang baru berlaku pada mode perangkat. Tidak ada migrasi database server atau perubahan nilai data pengguna. Jalankan `npm run test:currency` untuk pemeriksaan mata uang dan `npm run test:local` untuk alur penyimpanan/UI/offline. Pengujian UI otomatis memakai jsdom; pemeriksaan visual pada browser nyata masih diperlukan sebelum rilis.
+
+## Mulai langsung tanpa akun
+
+Jalankan `npm run dev`, lalu buka `http://127.0.0.1:8080`. Untuk mode **Di perangkat ini**, MySQL, Composer, dan konfigurasi `.env` database tidak diperlukan. Album, catatan, rencana, dan foto disimpan dalam IndexedDB pada browser dan origin tersebut. Port, domain, atau browser yang berbeda mempunyai penyimpanan terpisah. Membuka HTML melalui `file://` tidak didukung; gunakan server lokal atau hosting HTTPS.
+
+Melalui **titik tiga → Cadangan dan pemulihan**, gunakan **Unduh cadangan** untuk membuat berkas JSON lengkap, termasuk foto dan tanggal historis. **Pulihkan cadangan** memvalidasi berkas maksimal 32 MB, menampilkan jumlah data, lalu meminta konfirmasi penggantian data lokal. Pemulihan berlangsung dalam satu transaksi dan ditolak jika data berubah sejak pratinjau. CSV di Riwayat tetap mengikuti filter dan bukan berkas pemulihan lengkap.
+
+Data lokal dapat hilang ketika data situs dihapus, browser mengeviksinya, atau sesi privat berakhir. Cadangkan secara berkala; waktu yang ditampilkan adalah terakhir cadangan dibuat, bukan bukti berkas sudah disimpan pengguna. Browser yang tidak mengizinkan IndexedDB menampilkan kegagalan penyimpanan; aplikasi tidak berpindah diam-diam ke memori atau server. [Transaksi IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IDBTransaction) menjadi dasar penyimpanan atomik.
+
+Pada HTTPS atau loopback yang mendukung service worker, file aplikasi publik dicache setelah pendaftaran/instalasi berhasil sehingga dapat dibuka ulang secara offline. Cache tidak mencakup API, foto server, kredensial, atau isi cadangan. Build rilis baru perlu memperbarui versi cache di `sw.js`. Pengujian antarmuka offline pada browser nyata tetap diperlukan sebelum rilis.
+
+**Buka data server pribadi** membuka MySQL versi lama secara terpisah. Data perangkat tidak otomatis disalin atau disinkronkan ke server. Untuk membawa data server ke perangkat: buka data server, unduh cadangan, kembali ke data perangkat, lalu pilih cadangan dan tinjau penggantiannya. Jangan menghapus data server sebagai bagian dari proses ini.
+
+Akun cloud opsional dan sinkronisasi lintas perangkat **belum diimplementasikan**. Modul `data-source.js` memisahkan pemanggilan UI dari repository sehingga autentikasi/ownership dan sinkronisasi dapat ditambahkan kemudian. Jangan membuka API server pribadi kepada publik tanpa perlindungan akses.
 
 ## Deployment online
 
 Konfigurasi Docker/FrankenPHP untuk Vercel tersedia di repository. Ikuti [panduan deployment](DEPLOYMENT.md) untuk database online, environment variables, akses pemilik, serta pemeriksaan produksi. Konfigurasi ini perlu di-build dan diuji di Vercel sebelum dinyatakan siap digunakan online.
 
-## Menyiapkan server dan database
+## Menyiapkan server pribadi dan database (opsional)
 
 Kebutuhan: PHP 8.2 atau lebih baru dengan ekstensi pdo_mysql, mbstring, fileinfo, curl, dan openssl; Composer; MySQL 8 atau lebih baru. BCMath atau GMP disarankan untuk Web Push. PHP menangani aplikasi, sedangkan MySQL menyimpan album, gambar, catatan uang, dan rencana menabung.
 
@@ -109,11 +137,11 @@ Detail album memiliki satu tombol utama **Catat uang**, diikuti ringkasan rencan
 
 Saat mencatat dari dalam album atau tombol pada kartu album, tujuan langsung mengikuti album tersebut dan tidak ditampilkan sebagai pilihan. Formulir hanya meminta jenis setoran/penarikan, nominal, dan keterangan opsional. Ringkasan nama album tetap terlihat. Pilihan album hanya muncul saat mencatat dari Ringkasan jika ada beberapa album; dengan satu album, tujuan langsung ditentukan.
 
-Tanggal catatan baru otomatis ditetapkan server ketika tombol simpan ditekan, memakai **Asia/Jakarta (WIB)**. Tidak ada input tanggal; formulir yang terbuka melewati tengah malam mengikuti tanggal saat disimpan. Tanggal dari browser tidak digunakan untuk menentukan tanggal catatan baru. Mengedit catatan lama mempertahankan tanggal dan album aslinya, termasuk data historis dari versi sebelumnya. Nominal/jenis/keterangan tetap dapat diedit dengan validasi saldo sepanjang riwayat.
+Tanggal catatan baru otomatis ditetapkan ketika tombol simpan ditekan, memakai **Asia/Jakarta (WIB)**. Mode perangkat memakai jam perangkat; mode server memakai jam server dan tidak menerima tanggal dari browser. Tidak ada input tanggal; formulir yang terbuka melewati tengah malam mengikuti tanggal saat disimpan. Mengedit catatan lama mempertahankan tanggal dan album aslinya, termasuk data historis dari versi sebelumnya. Nominal/jenis/keterangan tetap dapat diedit dengan validasi saldo sepanjang riwayat.
 
-Saldo dihitung dari catatan tersimpan. Perubahan yang membuat saldo negatif di bagian mana pun dalam riwayat ditolak. Perubahan pada album yang sama dijalankan dalam transaksi dengan penguncian album. Menghapus album ikut menghapus catatan di dalamnya setelah konfirmasi.
+Saldo dihitung dari catatan tersimpan. Perubahan yang membuat saldo negatif di bagian mana pun dalam riwayat ditolak. Mode perangkat memakai transaksi IndexedDB yang menserialkan penulisan wallet; server memakai transaksi dan penguncian album. Menghapus album ikut menghapus catatan di dalamnya setelah konfirmasi.
 
-Aplikasi dimulai tanpa data contoh. Data serta gambar tersimpan dalam MySQL dan bertahan setelah halaman ditutup. Backup dilakukan melalui database MySQL.
+Aplikasi dimulai tanpa data contoh. Secara default data dan foto tersimpan dalam IndexedDB; pada mode server pribadi data berada di MySQL. Cadangan JSON tersedia melalui menu **Cadangan dan pemulihan**. Cadangan operasional MySQL tetap dilakukan melalui pengelola database.
 
 ## Rencana menabung dan pengingat
 
@@ -127,13 +155,13 @@ Aktifkan **Ingatkan saya**, lalu tentukan jam dalam **WIB (Asia/Jakarta)**. Renc
 
 Setiap periode dimulai pada jadwal menabung sampai sebelum jadwal berikutnya. Setoran pada album yang sama dalam periode tersebut dijumlahkan; penarikan tidak menghapus fakta bahwa setoran periode sudah terpenuhi. Setoran sebelum periode dimulai tetap memengaruhi saldo album, tetapi tidak memenuhi jadwal mendatang. Tidak ada utang atau tumpukan pengingat dari jadwal yang terlewat. Rencana dapat dijeda. Pengingat berhenti selama saldo mencapai target, dan mengikuti kondisi saldo terbaru jika ada penarikan.
 
-Tombol **titik tiga** di kanan header membuka **halaman Pengaturan** (`#pengaturan`). Tombol Kembali mengembalikan halaman atau album sebelumnya. Empat menu utama tetap tersedia. Tema **Terang**, **Gelap**, dan **Ikuti perangkat** berlaku di seluruh aplikasi dan disimpan pada browser perangkat ini; mode perangkat mengikuti perubahan sistem. Jika penyimpanan browser diblokir, perubahan tema tetap bisa digunakan selama halaman terbuka.
+Tombol **titik tiga** di kanan header menampilkan menu **Pengaturan** (`#pengaturan`) dan **Cadangan dan pemulihan** (`#cadangan`). Pengaturan, cadangan, dan detail album memakai tombol Kembali untuk kembali ke layar sebelumnya. Buka baris **Tema aplikasi** untuk memilih **Terang**, **Gelap**, atau **Ikuti perangkat**. Pilihan disimpan di browser dan berlaku di seluruh aplikasi. Mode perangkat mengikuti perubahan tema sistem. Jika penyimpanan browser diblokir, perubahan tema berlaku selama halaman terbuka.
 
-Bagian **Izin notifikasi** berisi status aktual, aktivasi, notifikasi uji, dan penonaktifan perangkat ini. Setiap perangkat perlu diaktifkan sendiri. Izin browser baru diminta setelah pengguna menekan tombol aktivasi. Penolakan izin tidak menghalangi penyimpanan rencana. Tanggal dan jadwal tetap menggunakan WIB, terlepas dari tema atau zona waktu perangkat.
+Baris **Notifikasi** menampilkan status perangkat. Buka baris tersebut untuk melihat detail, mengaktifkan notifikasi, mengirim uji, atau menonaktifkan perangkat ini. Izin browser diminta setelah pengguna menekan tombol aktivasi. Penolakan izin tidak menghalangi penyimpanan rencana. Tanggal dan jadwal menggunakan WIB.
 
-**Autentikasi biometrik** dan **Izin alarm** tampil dengan status **Belum tersedia**. Versi ini belum mempunyai autentikasi biometrik ataupun integrasi alarm Android. Mengaktifkan keamanan biometrik memerlukan verifikasi aman, misalnya alur [WebAuthn](https://developer.mozilla.org/en-US/docs/Web/API/Web_Authentication_API) atau integrasi keamanan aplikasi native; sakelar lokal tidak melindungi API. [Akses alarm Android](https://developer.android.com/develop/background-work/services/alarms) berbeda dari izin notifikasi browser. Pengingat saat ini tetap menggunakan Web Push.
+**Autentikasi biometrik** dan **Izin alarm Android** belum diimplementasikan dan disembunyikan dari Pengaturan. Mode perangkat tetap mendukung penyimpanan rencana, tetapi belum menyediakan pengingat ketika aplikasi tertutup. Web Push mengikuti rencana pada server pribadi; aktifkan setelah membuka sumber data tersebut. Akun/passkey dan alarm native memerlukan tahap implementasi tersendiri; lihat [rancangan arsitektur](ARCHITECTURE.md).
 
-**Rate the app** dan **Gift for developer** memakai konfigurasi publik `APP_RATE_URL` (alamat halaman Google Play aplikasi) dan `APP_SUPPORT_URL` (alamat dukungan yang dipilih developer). Isi melalui `.env` lokal atau environment hosting. Hanya tautan HTTPS tanpa kredensial yang diterima; tautan kosong/tidak valid menampilkan **Belum tersedia**, tanpa tombol aktif palsu. Tujuan yang tersedia terbuka di tab baru. Tidak ada tautan aplikasi/donasi contoh yang dipakai sebagai tujuan nyata.
+**Beri penilaian** dan **Dukung pengembang** di menu titik tiga memakai konfigurasi publik `APP_RATE_URL` (halaman Google Play aplikasi) dan `APP_SUPPORT_URL` (alamat dukungan pengembang). Isi melalui `.env` lokal atau environment hosting. Tautan HTTPS yang valid terbuka di tab baru. Tautan kosong, tidak valid, atau berisi kredensial ditandai **Belum tersedia**.
 
 Siapkan pengiriman pengingat lokal sekali:
 
@@ -148,7 +176,7 @@ Ganti alamat contoh dengan situs HTTPS milikmu atau `mailto:alamat-kontak`. Peri
 
 `npm run dev` menjalankan server PHP dan penjadwal pengingat bersama jika VAPID sudah tersedia. Pada Windows, peluncur menyiapkan `OPENSSL_CONF` dari instalasi PHP sebelum proses dimulai. Setelah memperbarui versi aplikasi ini, hentikan server lama lalu jalankan kembali `npm run dev`. Untuk Laragon/Apache atau server lain, jalankan `npm run reminders` terpisah dan pastikan `OPENSSL_CONF` sudah benar sebelum web server PHP dimulai. Pengingat tidak berjalan saat komputer/server dimatikan.
 
-Gunakan HTTPS untuk situs online; loopback `http://127.0.0.1:8080` dapat dipakai untuk pengembangan lokal. Di iPhone/iPad, gunakan web app yang ditambahkan ke Layar Utama. Setelah server berjalan, buka **titik tiga → Pengaturan → Aktifkan notifikasi**, lalu kirim notifikasi uji. Pengingat asli memakai Web Push sehingga tidak memerlukan halaman tetap terbuka. Waktu penerimaan bergantung pada jaringan, browser, dan pengaturan perangkat.
+Gunakan HTTPS untuk situs online; loopback `http://127.0.0.1:8080` dapat dipakai untuk pengembangan lokal. Di iPhone/iPad, gunakan web app yang ditambahkan ke Layar Utama. Setelah server berjalan, buka **titik tiga → Pengaturan → Notifikasi → Aktifkan notifikasi**, lalu kirim notifikasi uji. Pengingat asli memakai Web Push sehingga tidak memerlukan halaman tetap terbuka. Waktu penerimaan bergantung pada jaringan, browser, dan pengaturan perangkat.
 
 Penjadwal memeriksa jadwal setiap menit. Setiap jadwal dikirim paling banyak sekali per perangkat saat proses berjalan normal; pengiriman yang gagal dapat dicoba ulang, langganan kedaluwarsa dihapus, dan tag notifikasi yang sama mencegah penumpukan pada perangkat. Riwayat pengiriman tersimpan di MySQL. Pengiriman uji memakai layanan push sebenarnya; pengujian otomatis memakai transport simulasi agar tidak mengirim pesan ke perangkat pengguna.
 
@@ -186,35 +214,11 @@ Tanggal awal dan seluruh statistik dihitung ulang setelah catatan diubah/dihapus
 
 ## Struktur
 
-```text
-.env                       Konfigurasi lokal; tidak masuk Git
-.env.example               Contoh konfigurasi tanpa kredensial pribadi
-index.html                 Halaman utama aplikasi
-assets/css/tailwind.css    Sumber styling
-assets/css/style.css       Hasil build Tailwind
-assets/css/interface.css   Stylesheet sumber permukaan, navigasi, dan kredit developer
-assets/js/main.js          Navigasi, tampilan, formulir, dan permintaan API
-assets/js/navigation.js    Rute menu dan pilihan filter halaman yang terpisah
-assets/js/progress.js      Perhitungan dan format persentase target
-assets/js/monthly.js       Perhitungan laporan, perbandingan, dan kalender bulanan
-assets/js/monthly-view.js  Tampilan ringkasan dan grafik bulanan
-assets/images/             Ikon dan sampul ilustrasi bawaan
-database/schema.sql       Struktur tabel MySQL
-php/environment.php       Pembaca konfigurasi environment
-php/csrf.php              Token CSRF lokal dan cookie bertanda tangan untuk produksi
-php/database.php          Koneksi PDO, pembacaan data, dan validasi saldo
-php/api.php               Endpoint CRUD dan gambar album
-scripts/setup-database.php Pemasangan tabel
-scripts/check-database.php Pemeriksaan koneksi dan keberadaan tabel
-scripts/build-css.mjs      Build CSS dengan compiler resmi Tailwind
-scripts/serve.php          Router server lokal
-scripts/test-mysql.mjs     Penyiapan MySQL sementara untuk pengujian
-scripts/test-api.mjs       Pengujian CRUD melalui HTTP
-```
-
-Folder `lib/` ditambahkan saat library browser diperlukan. Versi ini menggunakan interaksi JavaScript dan CSS bawaan.
+Panduan lengkap beserta pohon folder dan tabel lokasi perubahan tersedia di [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md). Entry browser adalah `assets/js/app.js`; `pages/` mengurus halaman/formulir, `components/` mengurus perilaku bersama, `domain/` mengurus aturan dan perhitungan, dan `data/` mengurus penyimpanan serta koneksi. Navbar/footer dan markup tetap ditulis sekali di `index.html`. Pengujian berada di `tests/`, alat operasional di `scripts/`.
 
 ## Pengembangan dan pengujian
+
+Pengujian lokal memakai `fake-indexeddb` untuk transaksi dan `jsdom` untuk alur DOM tanpa database. Gunakan Node.js 24 LTS minimal 24.15 untuk dependensi pengujian ini; lingkungan verifikasi saat pengembangan memakai 24.20. Kedua paket hanya dependensi pengembangan dan tidak dimuat oleh browser aplikasi.
 
 CSS hasil build sudah disertakan. Untuk mengubah styling:
 
@@ -232,6 +236,7 @@ npm run test:monthly
 npm run test:navigation
 npm run test:settings
 npm run test:csrf
+npm run test:local
 npm run db:check
 php -l php/api.php
 php -l php/database.php
@@ -250,7 +255,7 @@ Pengujian menjalankan instance MySQL dan server PHP sementara di loopback dengan
 
 ## Lingkungan pemakaian
 
-Versi ini untuk satu pengguna. Server pengembangan hanya terikat pada `127.0.0.1`, tanpa login lokal. Container produksi melindungi seluruh aplikasi dengan HTTP Basic melalui Caddy; hanya pemilik yang memiliki kredensial dapat masuk. Ini bukan sistem akun banyak pengguna; semua browser yang berhasil masuk melihat database yang sama.
+Mode perangkat dapat dipakai tanpa akun dan tidak mengirim data tabungan ke database server. Server pengembangan hanya terikat pada `127.0.0.1`, tanpa login lokal. Pada container produksi, shell aplikasi publik dapat dibuka langsung, sedangkan seluruh path `/php/*` dilindungi HTTP Basic melalui Caddy. Server pribadi tetap merupakan database satu pemilik; semua browser yang berhasil masuk ke API tersebut melihat data yang sama. Perlindungan Caddy ini belum diuji melalui container dalam lingkungan pengembangan sekarang; verifikasi sebelum deployment.
 
 Untuk Apache, aktifkan `mod_rewrite` dan `AllowOverride All` agar aturan `.htaccess` berlaku. Pada hosting, isi konfigurasi database yang diberikan penyedia hosting melalui environment server atau `.env`. Penyiapan akses banyak pengguna merupakan pekerjaan terpisah.
 

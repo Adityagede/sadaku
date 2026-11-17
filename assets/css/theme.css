@@ -72,4 +72,4 @@
 :root[data-theme="dark"] :is(.form-error:not(:empty), .connection-error, .delete-symbol) { background: #482e26; border-color: #8a5d46; color: #ffd0b0; }
 :root[data-theme="dark"] .connection-error p { color: #e4bda1; }
 :root[data-theme="dark"] :focus-visible { outline-color: #a6d9b4; }
-:root[data-theme="dark"] .settings-trigger.is-active { background: var(--app-selected); color: var(--app-accent); border-color: var(--app-accent); }
+:root[data-theme="dark"] .settings-trigger[aria-expanded="true"] { background: var(--app-selected); color: var(--app-accent); }

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { ACTIVITY_PAGE_SIZE, DEFAULT_ACTIVITY_FILTERS, activityCsv, activityDayLabel, activityMonths, activityPage, bindActivityMotion, filterActivity } from '../assets/js/activity.js';
+import { bindActivityMotion } from '../assets/js/components/activity-motion.js';
+import { ACTIVITY_PAGE_SIZE, DEFAULT_ACTIVITY_FILTERS, activityCsv, activityDayLabel, activityMonths, activityPage, filterActivity } from '../assets/js/domain/activity.js';
 
 test('Riwayat menyertakan semua album dan tahun dengan urutan terbaru', () => {
     const entries = [

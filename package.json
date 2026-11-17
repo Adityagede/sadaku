@@ -5,25 +5,30 @@
   "scripts": {
     "build": "node scripts/build-css.mjs",
     "dev": "node scripts/php.mjs --dev",
-    "check": "node --check assets/js/main.js",
-    "test": "node scripts/test-mysql.mjs",
-    "test:progress": "node --test scripts/progress.test.mjs",
-    "test:monthly": "node --test scripts/monthly.test.mjs",
-    "test:navigation": "node --test scripts/navigation.test.mjs",
-    "test:settings": "node --test scripts/theme.test.mjs && php scripts/app-settings.test.php",
-    "test:activity": "node --test scripts/activity.test.mjs",
-    "test:entry": "node --test scripts/entry-context.test.mjs",
-    "test:csrf": "php scripts/csrf.test.php",
-    "test:money": "node --test scripts/money-input.test.mjs",
-    "test:plans": "node --test scripts/saving-plan.test.mjs scripts/reminders.test.mjs && php scripts/saving-plan.test.php && node scripts/php.mjs scripts/push-encryption.test.php",
+    "check": "node scripts/check-source.mjs",
+    "test": "node tests/test-mysql.mjs",
+    "test:progress": "node --test tests/progress.test.mjs",
+    "test:monthly": "node --test tests/monthly.test.mjs",
+    "test:navigation": "node --test tests/navigation.test.mjs",
+    "test:settings": "node --test tests/theme.test.mjs && php tests/app-settings.test.php",
+    "test:activity": "node --test tests/activity.test.mjs",
+    "test:entry": "node --test tests/entry-context.test.mjs",
+    "test:local": "node --experimental-vm-modules --test tests/local-data.test.mjs tests/local-ui.test.mjs tests/offline.test.mjs",
+    "test:csrf": "php tests/csrf.test.php",
+    "test:money": "node --test tests/money-input.test.mjs",
+    "test:plans": "node --test tests/saving-plan.test.mjs tests/reminders.test.mjs && php tests/saving-plan.test.php && node scripts/php.mjs tests/push-encryption.test.php",
     "reminders": "node scripts/php.mjs scripts/send-reminders.php --watch",
     "push:setup": "node scripts/php.mjs scripts/setup-push.php",
     "db:setup": "php scripts/setup-database.php",
-    "db:check": "php scripts/check-database.php"
+    "db:check": "php scripts/check-database.php",
+    "test:currency": "node --test tests/currency.test.mjs",
+    "test:unit": "node --experimental-vm-modules --test tests/*.test.mjs"
   },
   "devDependencies": {
-    "tailwindcss": "4.3.1",
     "@tailwindcss/node": "4.3.1",
-    "@tailwindcss/oxide": "4.3.1"
+    "@tailwindcss/oxide": "4.3.1",
+    "fake-indexeddb": "6.2.8",
+    "jsdom": "31.0.1",
+    "tailwindcss": "4.3.1"
   }
 }

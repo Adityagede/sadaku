@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { applyRoute, createNavigationState, parseRoute, routeFor } from '../assets/js/navigation.js';
+import { applyRoute, createNavigationState, parseRoute, routeFor } from '../assets/js/components/navigation.js';
 
 test('Statistik dan Riwayat dimulai dengan cakupan masing-masing', () => {
     const state = createNavigationState();
@@ -31,8 +31,8 @@ test('berpindah menu mempertahankan aktivitas lama yang sudah dimuat dan filter 
     assert.equal(state.statistics.period, '2026-10');
 });
 
-test('tautan empat menu dan detail album dapat dibuka langsung', () => {
-    for (const view of ['overview', 'albums', 'history', 'statistics', 'settings']) {
+test('tautan menu dan detail album dapat dibuka langsung', () => {
+    for (const view of ['overview', 'albums', 'history', 'statistics', 'settings', 'backup']) {
         assert.equal(parseRoute('#' + routeFor(view)).view, view);
     }
     assert.deepEqual(parseRoute('#album/abc123'), { view: 'detail', albumId: 'abc123' });

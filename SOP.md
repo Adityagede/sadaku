@@ -15,9 +15,10 @@ Dokumen ini menjadi acuan pengerjaan dan pembaruan Sadaku, aplikasi pribadi untu
 - HTML untuk struktur halaman.
 - Tailwind CSS untuk styling.
 - JavaScript untuk interaksi di browser.
+- Mode awal memakai IndexedDB untuk data tamu pada browser, tanpa memanggil API. Akun cloud dan sinkronisasi belum tersedia. Cadangan/pemulihan lokal harus mempertahankan tanggal historis, foto, validasi saldo, serta transaksi atomik.
 - PHP untuk pemrosesan di server.
 - `index.html` di root menjadi halaman masuk default, berisi antarmuka aplikasi Sadaku.
-- PHP memproses API dan menyimpan data secara permanen dalam MySQL menggunakan PDO.
+- PHP memproses API mode server pribadi dan menyimpan data dalam MySQL menggunakan PDO. Mode ini dipertahankan terpisah dari data perangkat; jangan memindahkan atau mencampur data tanpa pratinjau dan konfirmasi pengguna.
 - Konfigurasi host, port, nama database, username, dan password dibaca dari `.env`. `.env` tidak dimasukkan ke Git; `.env.example` menjadi contoh konfigurasi tanpa kredensial pribadi.
 - Struktur tabel disimpan dalam `database/schema.sql`. Jalankan `php scripts/setup-database.php` setelah database dibuat. Aplikasi tidak membuat tabel pada setiap permintaan.
 - Jalankan server lokal melalui router `scripts/serve.php`. Router hanya menyajikan halaman, aset yang diizinkan, dan endpoint API.
@@ -29,23 +30,30 @@ Struktur berikut menjadi acuan. Buat folder dan file saat memang dibutuhkan; jan
 
 ```text
 /
-├── index.html
-├── SOP.md
-├── assets/
-│   ├── css/
-│   │   ├── tailwind.css   # Sumber styling dan konfigurasi CSS yang diperlukan
-│   │   └── style.css      # Hasil build untuk dipakai halaman
-│   ├── js/               # JavaScript milik aplikasi
-│   └── images/           # Gambar yang digunakan
-├── lib/                  # Library pihak ketiga yang disimpan lokal
-├── pages/                # Halaman aplikasi selain landing page
-└── php/                  # Pemrosesan PHP dan kode server bersama
+??? index.html             # Satu dokumen: tampilan, shell bersama, dialog
+??? assets/
+?   ??? css/               # Sumber CSS dan hasil build style.css
+?   ??? js/
+?   ?   ??? app.js         # Startup, state, dan penghubung modul
+?   ?   ??? pages/         # Pengendali halaman dan formulir
+?   ?   ??? components/    # Perilaku dan tampilan yang digunakan bersama
+?   ?   ??? domain/        # Aturan tabungan, nominal, tanggal, dan laporan
+?   ?   ??? data/          # Penyimpanan, cadangan, dan koneksi
+?   ??? images/
+??? php/                   # API dan kode server
+??? database/              # Skema database
+??? scripts/               # Alat pengembangan dan pemeliharaan
+??? tests/                 # Pengujian dan helper terisolasi
+??? deployment/            # Konfigurasi produksi
+??? docs/                  # Panduan developer
 ```
 
 - Pisahkan kode buatan proyek dari library pihak ketiga.
-- Simpan library dalam subfolder bernama jelas, misalnya `lib/aos/` atau `lib/swiper/`, hanya jika digunakan.
+- Dependensi npm/Composer dikelola melalui manifest. Jangan menambahkan folder library atau placeholder jika tidak digunakan.
 - Gunakan nama file yang menjelaskan fungsinya dan ikuti pola penamaan yang konsisten.
 - `.env`, kode konfigurasi PHP, skema SQL, serta script pemeliharaan tidak termasuk rute publik router dan diblokir oleh `.htaccess` pada Apache.
+
+Detail pembagian tanggung jawab berada di [panduan struktur proyek](docs/PROJECT_STRUCTURE.md). Aturan domain tidak bergantung pada DOM; pengendali halaman membaca data terbaru melalui dependensi yang diberikan `app.js`. Pemindahan file wajib memperbarui impor, router publik, cache offline, build, tes, dan dokumentasi. Perapian struktur tidak mengubah desain atau data pengguna.
 
 ## 3a. Alur aplikasi yang disepakati
 
@@ -82,6 +90,14 @@ Struktur berikut menjadi acuan. Buat folder dan file saat memang dibutuhkan; jan
 
 ## 3b. Rencana menabung dan pengingat album
 
+### Mata uang pada mode perangkat
+
+- Setiap album memiliki mata uang sendiri. Dropdown tersedia langsung di sebelah kiri input Nominal target saat membuat album, tanpa dialog pendahuluan atau pengaturan mata uang global. Album dan mata uang disimpan sekaligus; pembatalan tidak mengubah data. Mata uang album yang tersimpan dikunci. Tidak ada konversi kurs otomatis.
+- Mata uang yang didukung: IDR, USD, EUR, SGD, GBP, AUD, CAD, MYR, JPY, CHF. IDR dan JPY memakai nominal bulat; mata uang lainnya memakai dua desimal. Simpan nilai sebagai integer dengan skala yang ditetapkan mata uang. Aturan ini menggantikan ketentuan rupiah bulat di bawah untuk mata uang non-IDR.
+- Input IDR memakai pemisah ribuan titik. Input non-IDR memakai titik desimal dan menerima koma ribuan yang valid; tampilkan petunjuk pecahan. Mengganti mata uang pada draft mengosongkan target dan nominal rencana. Pencatatan mengikuti mata uang album dan pergantian album dengan mata uang berbeda mengosongkan nominal. Ringkasan mengelompokkan total per mata uang; Statistik memfilter mata uang sebelum menghitung total/grafik. CSV campuran menyertakan kode mata uang per baris.
+- Wallet/cadangan versi 3 menyimpan mata uang per album. Versi 1 tetap dibaca sebagai IDR dengan nilai asli; versi 2 menurunkan metadata mata uang wallet ke tiap album. Validasi versi, kode, skala, dan mata uang tujuan sebelum pemulihan atomik atau penyimpanan. Data mata uang berbeda tidak dijumlahkan tanpa konversi eksplisit.
+- Mode server pribadi lama tetap IDR, terpisah dari wallet perangkat. Bahasa Indonesia dan zona waktu WIB tetap berlaku; perubahan bahasa/zona waktu memerlukan implementasi tersendiri.
+
 - Rencana menabung diatur saat membuat album, setelah isian opsional. Pilihan Harian, Mingguan, dan Bulanan berupa tiga tombol radio dengan border rounded, bukan dropdown. Pengingat serta jam WIB berada di bawah pilihan jadwal, diikuti nominal, tanggal mulai, dan hari/tanggal pilihan. Bagian ini boleh dilewati atau dikosongkan dengan Tanpa rencana.
 - Simpan album menyimpan album dan rencana dalam satu transaksi. Rencana tidak valid tidak boleh meninggalkan album setengah jadi. Ubah album memuat pengaturan rencana lama; memilih Tanpa rencana lalu menyimpan menghentikan rencana tersebut. Detail hanya menampilkan ringkasan rencana yang tersedia, tanpa alur pembuatan rencana terpisah.
 - Semua input nominal (target, rencana, dan catatan) menggunakan titik ribuan otomatis saat diketik dan tetap menjaga posisi kursor. FormData mengirim angka tanpa titik. Validasi rupiah bulat, batas nominal, input kosong, tempel teks, dan penghapusan di sekitar pemisah tetap diperiksa.
@@ -91,11 +107,11 @@ Struktur berikut menjadi acuan. Buat folder dan file saat memang dibutuhkan; jan
 - Rencana tidak membuat transaksi. CTA tunggal Catat uang pada album dengan rencana aktif mengisi saran nominal sisa periode yang dibatasi sisa target; pengguna tetap menyimpan catatan. Mengganti jenis ke Penarikan membersihkan nominal yang diisi otomatis agar tidak dianggap nominal penarikan pilihan pengguna.
 - Periode dimulai pada jadwal sampai sebelum jadwal berikutnya. Hanya setoran album yang sama di periode tersebut yang memenuhi nominal rencana. Penarikan tidak menghapus pencapaian setoran periode. Jadwal terlewat tidak menjadi utang atau tumpukan pengingat.
 - Pengingat mengikuti jadwal dan jam Asia/Jakarta, berhenti selama jeda, nominal setoran periode terpenuhi, atau saldo mencapai target. Kondisi mengikuti data terbaru setelah catatan diubah/dihapus.
-- Header utama memakai tombol titik tiga berlabel aksesibel Buka pengaturan. Riwayat memakai header Aktivitas dengan tombol kembali ke Ringkasan dan unduh CSV. Tombol pengaturan membuka halaman dengan rute #pengaturan. Kembali mengarah ke halaman/album sebelumnya, menjaga filter Statistik dan aktivitas yang telah dimuat; tautan langsung kembali ke Ringkasan. Empat menu utama tetap tersedia.
-- Pengaturan memuat Tampilan, Keamanan, Izin perangkat, serta Tentang Sadaku. Tema Terang, Gelap, dan Ikuti perangkat berupa pilihan radio yang aksesibel. Pilihan berlaku di seluruh aplikasi, disimpan lokal per perangkat, diterapkan sebelum stylesheet dimuat, dan disinkronkan antar-tab. Mode Ikuti perangkat mengikuti perubahan tema sistem. Penyimpanan browser yang diblokir tidak boleh membuat aplikasi gagal.
+- Tombol titik tiga berlabel Menu lainnya membuka menu di kanan header. Pengaturan membuka rute `#pengaturan` dan Cadangan dan pemulihan membuka rute `#cadangan`. Kembali mengarah ke halaman atau album sebelumnya sambil menjaga filter dan aktivitas yang telah dimuat. Tautan langsung kembali ke Ringkasan.
+- Pengaturan, Cadangan dan pemulihan, dan detail album menampilkan tombol Kembali sebagai navigasi layar. Pengaturan merangkum tema aktif, status notifikasi, dan akses ke cadangan. Buka baris Tema aplikasi untuk mengakses pilihan radio Terang, Gelap, dan Ikuti perangkat. Pilihan berlaku di seluruh aplikasi, disimpan lokal per perangkat, diterapkan sebelum stylesheet dimuat, dan disinkronkan antar-tab. Mode Ikuti perangkat mengikuti perubahan tema sistem. Jika penyimpanan preferensi tema diblokir, pilihan tetap berlaku selama sesi halaman. Kegagalan IndexedDB menampilkan pesan di aplikasi.
 - Aktivasi, status, notifikasi uji, dan penonaktifan notifikasi perangkat berada di halaman Pengaturan. Izin diblokir menjelaskan cara mengubahnya melalui pengaturan situs browser; tidak ada sakelar yang mengklaim mengubah izin sistem. Informasi WIB tetap tersedia.
-- Autentikasi biometrik dan izin alarm tampil dengan status Belum tersedia pada versi web saat ini. Jangan menyimpan toggle biometrik lokal atau mengklaim album terlindungi sebelum autentikasi aman diintegrasikan. Izin alarm Android memerlukan integrasi perangkat, terpisah dari Web Push yang sudah ada.
-- Rate the app dan Gift for developer menggunakan tautan HTTPS dari APP_RATE_URL serta APP_SUPPORT_URL. Jika kosong/tidak valid, tampilkan Belum tersedia tanpa tindakan palsu. Tautan yang tersedia terbuka di tab baru tanpa akses ke jendela asal. Jangan mengarang alamat Google Play atau tujuan dukungan developer.
+- Autentikasi biometrik dan izin alarm disembunyikan sampai implementasinya siap. Jangan menyimpan toggle biometrik lokal atau mengklaim album terlindungi sebelum autentikasi aman diintegrasikan. Izin alarm Android memerlukan integrasi perangkat, terpisah dari Web Push yang sudah ada. Mode perangkat menyimpan rencana tetapi belum mengirim pengingat saat aplikasi tertutup.
+- Beri penilaian dan Dukung pengembang di menu titik tiga menggunakan tautan HTTPS dari `APP_RATE_URL` dan `APP_SUPPORT_URL`. Jika tautan kosong atau tidak valid, tampilkan Belum tersedia. Tautan yang tersedia terbuka di tab baru tanpa akses ke jendela asal.
 - Pengguna mengaktifkan notifikasi sendiri melalui tombol sebelum izin browser diminta. Rencana tetap dapat disimpan saat izin ditolak atau layanan belum tersedia. Jangan menyatakan notifikasi perangkat aktif sebelum langganan berhasil disimpan ke server.
 - Web Push memakai library Composer, service worker, kunci VAPID privat di environment, langganan perangkat di MySQL, serta penjadwal CLI setiap menit. Penjadwal bukan timer di halaman. Satu pengguna dapat mengaktifkan beberapa perangkat; penonaktifan hanya berlaku untuk perangkat tersebut.
 - Tabel rencana, langganan, dan riwayat pengiriman ditambahkan dengan setup database yang idempoten. Pengujian integrasi memakai MySQL sementara dan transport simulasi tanpa mengirim notifikasi ke perangkat pengguna.

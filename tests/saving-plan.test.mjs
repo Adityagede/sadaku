@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { scheduleOnOrAfter, nextOccurrence, currentPeriod, nextPlanDate, periodDeposits, suggestedAmount, estimatedCompletion } from '../assets/js/saving-plan.js';
+import { scheduleOnOrAfter, nextOccurrence, currentPeriod, nextPlanDate, periodDeposits, suggestedAmount, estimatedCompletion } from '../assets/js/domain/saving-plan.js';
 
 const daily = { frequency: 'daily', startDate: '2026-11-13', amount: 100000, scheduleDay: 1 };
 const weekly = { ...daily, frequency: 'weekly', scheduleDay: 5 };
@@ -49,6 +49,6 @@ test('Kalender PHP dan JavaScript konsisten melewati pergantian bulan dan tahun'
             cases.push({ plan, date });
         }
     }
-    const php = execFileSync('php', ['scripts/saving-plan.test.php', '--calendar'], { input: JSON.stringify(cases), encoding: 'utf8' });
+    const php = execFileSync('php', ['tests/saving-plan.test.php', '--calendar'], { input: JSON.stringify(cases), encoding: 'utf8' });
     assert.deepEqual(JSON.parse(php), cases.map(({ plan, date }) => ({ next: scheduleOnOrAfter(plan, date), period: currentPeriod(plan, date) })));
 });

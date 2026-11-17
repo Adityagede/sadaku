@@ -3,7 +3,7 @@ import test from 'node:test';
 import vm from 'node:vm';
 import { readFileSync } from 'node:fs';
 
-const source = readFileSync(new URL('../assets/js/theme.js', import.meta.url), 'utf8');
+const source = readFileSync(new URL('../assets/js/components/theme.js', import.meta.url), 'utf8');
 function fixture({ saved = null, dark = false, blocked = false } = {}) {
     const listeners = {};
     const media = { matches: dark, addEventListener: (name, callback) => { listeners.media = callback; } };

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { entryDestination } from '../assets/js/entry-context.js';
+import { entryDestination } from '../assets/js/domain/entry-context.js';
 const albums = [{ id: 'iphone' }, { id: 'motor' }];
 
 test('Mencatat dari dalam album mengunci album yang dibuka', () => {

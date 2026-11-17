@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { availableMonths, compareMonths, createMonthlyReport, formatMonth, monthRange, recordingHistory, resolveMonth, savingRoutine, shiftMonth, summarizeMonth } from '../assets/js/monthly.js';
-import { renderMonthlyReport } from '../assets/js/monthly-view.js';
+import { availableMonths, compareMonths, createMonthlyReport, formatMonth, monthRange, recordingHistory, resolveMonth, savingRoutine, shiftMonth, summarizeMonth } from '../assets/js/domain/monthly.js';
+import { renderMonthlyReport } from '../assets/js/pages/statistics-view.js';
 
 function entry(id, date, amount, type = 'deposit', albumId = 'a', createdAt = `${date} 12:00:00`) {
     return { id, date, amount, type, albumId, createdAt };

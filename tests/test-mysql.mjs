@@ -63,15 +63,15 @@ try {
     console.log(setup.stdout.trim());
     const check = await run('php', ['scripts/check-database.php'], { cwd: root, env: testEnvironment });
     console.log(check.stdout.trim());
-    const result = await run(process.execPath, ['scripts/test-api.mjs'], { cwd: root, env: testEnvironment, timeout: 60000, maxBuffer: 1024 * 1024 });
+    const result = await run(process.execPath, ['tests/test-api.mjs'], { cwd: root, env: testEnvironment, timeout: 60000, maxBuffer: 1024 * 1024 });
     console.log(result.stdout.trim());
-    const productionResult = await run(process.execPath, ['scripts/test-api.mjs'], {
+    const productionResult = await run(process.execPath, ['tests/test-api.mjs'], {
         cwd: root,
         env: { ...testEnvironment, APP_ENV: 'production', APP_KEY: randomBytes(32).toString('hex') },
         timeout: 60000, maxBuffer: 1024 * 1024,
     });
     console.log('Mode produksi: ' + productionResult.stdout.trim());
-    const reminders = await run('php', ['scripts/reminder-dispatch.test.php'], { cwd: root, env: testEnvironment, timeout: 15000 });
+    const reminders = await run('php', ['tests/reminder-dispatch.test.php'], { cwd: root, env: testEnvironment, timeout: 15000 });
     console.log(reminders.stdout.trim());
 } catch (error) {
     console.error(error.stderr || error.message);

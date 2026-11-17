@@ -1,8 +1,8 @@
-import { formatMonth, shiftMonth } from './monthly.js';
-import { activityTypeLabel } from './activity.js';
+import { currentCurrency, currencyInfo, moneyDisplay, majorAmount } from '../domain/currency.js';
+import { formatMonth, shiftMonth } from '../domain/monthly.js';
+import { activityTypeLabel } from '../domain/activity.js';
 
-const rupiah = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
-const shortMoney = new Intl.NumberFormat('id-ID', { notation: 'compact', maximumFractionDigits: 1 });
+const shortMoney = { format(value, currency) { return new Intl.NumberFormat('id-ID', { notation: 'compact', maximumFractionDigits: Math.max(1, currencyInfo(currency).digits) }).format(value); } };
 const percent = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 });
 const shortMonth = new Intl.DateTimeFormat('id-ID', { month: 'short', timeZone: 'UTC' });
 const dates = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
@@ -10,7 +10,7 @@ const utcDate = date => new Date(`${date}T00:00:00Z`);
 const icon = name => `<svg class="icon" aria-hidden="true"><use href="#i-${name}"/></svg>`;
 const escapeHtml = text => text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
 
-function renderMoneySummary({ deposits, withdrawals }, selected) {
+function renderMoneySummary({ deposits, withdrawals }, selected, currency) {
     const metrics = [
         { type: 'deposit', value: deposits, icon: 'in' },
         { type: 'withdrawal', value: withdrawals, icon: 'out' }
@@ -18,18 +18,19 @@ function renderMoneySummary({ deposits, withdrawals }, selected) {
     return metrics.map(({ type, value, icon: direction }) => `<button type="button" class="report-metric report-metric-${type}"
         id="report-type-${type}" data-report-type="${type}" aria-controls="report-breakdown" aria-pressed="${type === selected}">
         <span class="report-metric-icon">${icon(direction)}</span><span class="report-metric-copy">
-            <span>${activityTypeLabel(type)}</span><strong>${rupiah.format(value)}</strong>
+            <span>${activityTypeLabel(type)}</span><strong>${moneyDisplay.format(value, currency)}</strong>
         </span>
     </button>`).join('');
 }
 
 function renderAlbumPicker(albums, selected) {
     if (!albums.length) return '';
-    const options = albums.map(({ id, name }) => `<option value="${escapeHtml(id)}"${id === selected ? ' selected' : ''}>${escapeHtml(name)}</option>`).join('');
+    const mixed = new Set(albums.map(album => album.currency || 'IDR')).size > 1;
+    const options = albums.map(({ id, name, currency = 'IDR' }) => `<option value="${escapeHtml(id)}"${id === selected ? ' selected' : ''}>${escapeHtml(name)}${mixed ? ' · ' + currency : ''}</option>`).join('');
     return `<label class="report-album"><span>Album</span><select id="report-album"><option value="all">Semua album</option>${options}</select></label>`;
 }
 
-function renderBreakdown(entries, albums, type) {
+function renderBreakdown(entries, albums, type, currency) {
     const totals = new Map();
     for (const entry of entries) {
         if (entry.type === type) totals.set(entry.albumId, (totals.get(entry.albumId) || 0) + entry.amount);
@@ -37,7 +38,7 @@ function renderBreakdown(entries, albums, type) {
     const names = new Map(albums.map(album => [album.id, album.name]));
     const rows = [...totals].sort((a, b) => b[1] - a[1]).map(([id, total]) => `<li class="report-breakdown-row">
         <span class="report-breakdown-icon">${icon('album')}</span><div>
-            <span>${escapeHtml(names.get(id) || 'Album')}</span><strong>${rupiah.format(total)}</strong>
+            <span>${escapeHtml(names.get(id) || 'Album')}</span><strong>${moneyDisplay.format(total, currency)}</strong>
         </div>
     </li>`).join('');
     return `<div id="report-breakdown" aria-labelledby="report-type-${type}">
@@ -45,7 +46,7 @@ function renderBreakdown(entries, albums, type) {
     </div>`;
 }
 
-function renderComparison({ kind, percentage, difference, previousMonth, partial, throughDay, previousThroughDay }, month) {
+function renderComparison({ kind, percentage, difference, previousMonth, partial, throughDay, previousThroughDay }, month, currency) {
     if (kind === 'insufficient') {
         return `<section class="report-insight"><h3>Perbandingan setoran</h3>
             <p>Belum cukup riwayat untuk membandingkan periode ini.</p></section>`;
@@ -62,12 +63,12 @@ function renderComparison({ kind, percentage, difference, previousMonth, partial
     const range = partial
         ? `1–${throughDay} ${formatMonth(month)} dan 1–${previousThroughDay} ${formatMonth(previousMonth)}`
         : `${formatMonth(month)} dan ${formatMonth(previousMonth)}`;
-    const amount = difference ? ` · Selisih ${difference > 0 ? '+' : '−'}${rupiah.format(Math.abs(difference))}` : '';
+    const amount = difference ? ` · Selisih ${difference > 0 ? '+' : '−'}${moneyDisplay.format(Math.abs(difference), currency)}` : '';
     return `<section class="report-insight" data-trend="${kind}"><h3>Perbandingan setoran</h3>
         <strong>${titles[kind]}</strong><p>${range}${amount}</p></section>`;
 }
 
-function renderChart({ chart, month, currentMonth, history }) {
+function renderChart({ chart, month, currentMonth, history }, currency) {
     if (!chart.length) {
         return `<section class="report-chart report-chart-waiting">
             <div class="report-width"><h2>Bulan pertamamu masih berjalan</h2>
@@ -82,8 +83,8 @@ function renderChart({ chart, month, currentMonth, history }) {
             ? `<rect x="0" y="${100 - height}" width="40" height="${height}" rx="${Math.min(4, height / 2)}"/>`
             : '<line x1="3" y1="99" x2="37" y2="99"/>';
         return `<button type="button" class="report-bar" id="report-bar-${item.month}" data-report-month="${item.month}"
-            aria-pressed="${item.month === month}" aria-label="Lihat ${formatMonth(item.month)}, setoran ${rupiah.format(item.deposits)}">
-            <span class="report-bar-value" title="${rupiah.format(item.deposits)}">${shortMoney.format(item.deposits)}</span>
+            aria-pressed="${item.month === month}" aria-label="Lihat ${formatMonth(item.month)}, setoran ${moneyDisplay.format(item.deposits, currency)}">
+            <span class="report-bar-value" title="${moneyDisplay.format(item.deposits, currency)}">${shortMoney.format(majorAmount(item.deposits, currency), currency)}</span>
             <svg viewBox="0 0 40 100" preserveAspectRatio="none" aria-hidden="true">${bar}</svg>
             <span class="report-bar-month">${label}</span><span class="report-bar-year">${item.month.slice(0, 4)}</span>
         </button>`;
@@ -91,7 +92,7 @@ function renderChart({ chart, month, currentMonth, history }) {
     return `<section class="report-chart" aria-labelledby="report-chart-title">
         <div class="report-chart-heading report-width">
             <h2 id="report-chart-title">Setoran ${chart.length} bulan selesai${history.completedCount > chart.length ? ' terakhir' : ''}</h2>
-            <span>Rp</span>
+            <span>${currency}</span>
         </div>
         <div class="report-chart-plot">
             <svg class="report-chart-grid" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
@@ -128,7 +129,7 @@ function renderPeriodHeading({ months, month, currentMonth, comparison }) {
     </div>`;
 }
 
-export function renderMonthlyReport(report, { albums = [], type = 'deposit' } = {}) {
+export function renderMonthlyReport(report, { albums = [], type = 'deposit', currency = currentCurrency().code } = {}) {
     const { summary, month, comparison, routine, history } = report;
     const albumPicker = renderAlbumPicker(albums, report.albumId);
     if (!history.hasEntries) {
@@ -142,14 +143,14 @@ export function renderMonthlyReport(report, { albums = [], type = 'deposit' } = 
         <strong>Setoran di ${routine.activeMonths} dari ${routine.observedMonths} bulan selesai${history.completedCount > routine.observedMonths ? ' terakhir' : ''}</strong>
         <p>${routine.streak ? `${routine.streak} bulan berturut-turut dengan setoran hingga bulan lalu.` : 'Belum ada rentetan setoran hingga bulan lalu.'}</p>
     </section>` : '';
-    return `${renderChart(report)}
+    return `${renderChart(report, currency)}
     <section class="report-sheet report-width" aria-labelledby="report-period-title">
         ${renderPeriodHeading(report)}
         ${albumPicker}
-        <div class="statistics-metrics" role="group" aria-label="Rincian arus tabungan">${renderMoneySummary(summary, type)}</div>
-        ${renderBreakdown(summary.entries, albums, type)}
-        <div class="report-net"><span>Tabungan bersih</span><strong>${rupiah.format(summary.net)}</strong></div>
-        <div class="report-insights">${renderComparison(comparison, month)}${routines}</div>
+        <div class="statistics-metrics" role="group" aria-label="Rincian arus tabungan">${renderMoneySummary(summary, type, currency)}</div>
+        ${renderBreakdown(summary.entries, albums, type, currency)}
+        <div class="report-net"><span>Tabungan bersih</span><strong>${moneyDisplay.format(summary.net, currency)}</strong></div>
+        <div class="report-insights">${renderComparison(comparison, month, currency)}${routines}</div>
         <div class="report-history"><button type="button" class="button button-primary" id="report-history-link" data-action="view-history">Buka Riwayat</button></div>
     </section>`;
 }

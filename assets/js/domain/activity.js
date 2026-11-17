@@ -1,3 +1,4 @@
+import { currentCurrency, decimalAmount, albumCurrency, currencyGroups } from './currency.js';
 export const ACTIVITY_PAGE_SIZE = 30;
 export const DEFAULT_ACTIVITY_FILTERS = Object.freeze({ query: '', month: 'all', albumId: 'all', type: 'all' });
 
@@ -48,6 +49,8 @@ export function filterActivity(entries, albums, { query, month, albumId, type })
 }
 
 export function activityCsv(entries, albums) {
+    const mixed = currencyGroups(albums).length > 1;
+    const single = currencyGroups(albums)[0] || currentCurrency().code;
     const names = new Map(albums.map(album => [album.id, album.name]));
     const csvText = value => {
         const text = String(value ?? '');
@@ -59,10 +62,11 @@ export function activityCsv(entries, albums) {
         entry.date,
         csvText(names.get(entry.albumId) || 'Album'),
         activityTypeLabel(entry.type),
-        entry.type === 'withdrawal' ? -entry.amount : entry.amount,
+        ...(mixed ? [albumCurrency(albums, entry.albumId)] : []),
+        decimalAmount(entry.type === 'withdrawal' ? -entry.amount : entry.amount, albumCurrency(albums, entry.albumId)),
         csvText(entry.note)
     ].join(','));
-    return ['\uFEFFTanggal,Album,Jenis,Nominal (Rp),Catatan', ...rows].join('\r\n') + '\r\n';
+    return [`\uFEFFTanggal,Album,Jenis,${mixed ? 'Mata uang,Nominal' : `Nominal (${single === 'IDR' ? 'Rp' : single})`},Catatan`, ...rows].join('\r\n') + '\r\n';
 }
 
 export function activityDayLabel(date, today, formatDate) {
@@ -70,30 +74,4 @@ export function activityDayLabel(date, today, formatDate) {
     const yesterday = new Date(`${today}T00:00:00Z`);
     yesterday.setUTCDate(yesterday.getUTCDate() - 1);
     return date === yesterday.toISOString().slice(0, 10) ? 'Kemarin' : formatDate(date);
-}
-
-export function bindActivityMotion(root) {
-    const running = new WeakMap();
-    root.addEventListener('click', event => {
-        const summary = event.target.closest('.activity-row');
-        if (!summary || event.defaultPrevented || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        const item = summary.closest('.activity-item');
-        const content = item?.querySelector('.activity-detail');
-        if (!content || typeof item.animate !== 'function') return;
-        event.preventDefault();
-        const previous = running.get(item);
-        const expanded = previous ? !previous.expanded : !item.open;
-        const from = item.getBoundingClientRect().height;
-        previous?.animation.cancel();
-        item.open = true;
-        const to = expanded ? item.getBoundingClientRect().height : summary.getBoundingClientRect().height + item.offsetHeight - item.clientHeight;
-        const animation = item.animate([{ height: `${from}px` }, { height: `${to}px` }], { duration: 220, easing: 'cubic-bezier(.2,.7,.2,1)' });
-        running.set(item, { animation, expanded });
-        animation.onfinish = () => {
-            if (running.get(item)?.animation !== animation) return;
-            item.open = expanded;
-            running.delete(item);
-            animation.cancel();
-        };
-    });
 }

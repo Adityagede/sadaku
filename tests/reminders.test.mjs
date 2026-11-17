@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createDeviceNotifications } from '../assets/js/reminders.js';
+import { createDeviceNotifications } from '../assets/js/data/reminders.js';
 
 function fixture(t, { permission = 'default', failSave = false } = {}) {
     const original = Object.fromEntries(['navigator', 'window', 'Notification'].map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));

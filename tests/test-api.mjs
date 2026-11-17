@@ -45,7 +45,7 @@ function todayWib() {
     return `${parts.year}-${parts.month}-${parts.day}`;
 }
 function historicalEntry(id, date) {
-    execFileSync('php', ['scripts/set-test-entry-date.php', id, date], { cwd: root, env: process.env });
+    execFileSync('php', ['tests/set-test-entry-date.php', id, date], { cwd: root, env: process.env });
 }
 const port = 18000 + Math.floor(Math.random() * 1000);
 const base = `http://127.0.0.1:${port}`;
@@ -112,7 +112,7 @@ try {
     const page = await fetch(`${base}/`);
     assert.equal(page.status, 200);
     assert.match(await page.text(), /Sadaku/);
-    for (const asset of ['assets/css/style.css', 'assets/css/interface.css', 'assets/css/theme.css', 'assets/js/theme.js', 'assets/js/main.js', 'assets/js/progress.js', 'assets/js/monthly.js', 'assets/js/monthly-view.js', 'assets/js/navigation.js', 'assets/js/saving-plan.js', 'assets/js/reminders.js', 'assets/js/money-input.js', 'assets/js/activity.js', 'assets/js/entry-context.js', 'sw.js', 'assets/images/album-cover.svg']) {
+    for (const asset of ['assets/css/style.css', 'assets/css/interface.css', 'assets/css/theme.css', 'assets/js/components/theme.js', 'assets/js/app.js', 'assets/js/domain/progress.js', 'assets/js/domain/monthly.js', 'assets/js/pages/statistics-view.js', 'assets/js/components/navigation.js', 'assets/js/domain/saving-plan.js', 'assets/js/data/reminders.js', 'assets/js/components/money-input.js', 'assets/js/domain/activity.js', 'assets/js/domain/entry-context.js', 'sw.js', 'assets/images/album-cover.svg']) {
         assert.equal((await fetch(`${base}/${asset}`)).status, 200);
     }
     for (const privatePath of ['storage/sadaku.sqlite', 'php/database.php', 'php/environment.php', 'php/csrf.php', 'php/push.php', 'php/saving-plan.php', 'php/app-settings.php', 'vendor/autoload.php', 'composer.json', 'composer.lock', 'scripts/send-reminders.php', 'scripts/setup-push.php', 'scripts/php.mjs', '.env', '.env.example', 'database/schema.sql', 'SOP.md', '.gitignore', 'package.json', 'scripts/serve.php', 'Dockerfile', 'Caddyfile', '.dockerignore', 'deployment/entrypoint.sh', 'deployment/api.php', 'DEPLOYMENT.md']) {

@@ -8,11 +8,11 @@
     <meta name="description" content="Sadaku, ruang untuk mencatat uang dan menabung menuju target pribadimu. Buat album, pasang foto impianmu, dan ikuti progresnya.">
     <title>Sadaku — Ruang untuk impianmu</title>
     <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
-    <script src="assets/js/theme.js"></script>
+    <script src="assets/js/components/theme.js"></script>
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/interface.css">
     <link rel="stylesheet" href="assets/css/theme.css">
-    <script src="assets/js/main.js" type="module"></script>
+    <script src="assets/js/app.js" type="module"></script>
 </head>
 <body>
     <a class="skip-link" href="#konten">Lewati ke konten</a>
@@ -37,13 +37,13 @@
         <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="m3 16 6-6 6 6 3-3 3 3"/><circle cx="16" cy="8" r="1"/></symbol>
         <symbol id="i-in" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6v12h12"/></symbol>
         <symbol id="i-out" viewBox="0 0 24 24"><path d="M6 18 18 6M6 6h12v12"/></symbol>
-        <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol>
+        <symbol id="i-more" viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></symbol>
+        <symbol id="i-settings" viewBox="0 0 24 24"><path d="m10 3-.6 2.5-2 .9-2.4-1-2 3.5 2 1.7v2.8l-2 1.7 2 3.5 2.4-1 2 .9.6 2.5h4l.6-2.5 2-.9 2.4 1 2-3.5-2-1.7v-2.8l2-1.7-2-3.5-2.4 1-2-.9L14 3z"/><circle cx="12" cy="12" r="3"/></symbol>
+        <symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></symbol>
         <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></symbol>
         <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></symbol>
         <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.8 13A9 9 0 0 1 11 3.2 9 9 0 1 0 20.8 13Z"/></symbol>
         <symbol id="i-device" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 18h4"/></symbol>
-        <symbol id="i-fingerprint" viewBox="0 0 24 24"><path d="M4 10a8 8 0 0 1 16 0v3m-12 0v-3a4 4 0 0 1 8 0v4c0 3-1 5-2 7M12 10v5c0 3-1 5-2 7M4 14v1c0 2-.5 3-1 4m5-2c0 1-.5 3-1 4m12-5c0 2-.5 3-1 4"/></symbol>
-        <symbol id="i-alarm" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="m3 5 3-3m12 0 3 3M12 9v4l3 2M6 20l-1 2m13-2 1 2"/></symbol>
         <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/></symbol>
         <symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v9h14v-9M12 8v13m0-13H8a3 3 0 1 1 3-3Zm0 0h4a3 3 0 1 0-3-3Z"/></symbol>
         <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 3h7v7m0-7L10 14m0-11H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5"/></symbol>
@@ -69,10 +69,21 @@
         <header class="app-header">
             <a href="./" class="brand mobile-brand"><span class="brand-symbol">s</span>sadaku<span class="brand-period">.</span></a>
             <p id="header-location" class="header-location">Ruang tabunganmu</p>
-            <div class="header-right"><span id="today" class="header-date"></span><button type="button" class="icon-button settings-trigger" data-action="settings" aria-label="Buka pengaturan" aria-controls="settings-view"><svg class="icon" aria-hidden="true"><use href="#i-more"/></svg></button></div>
+            <div class="header-right">
+                <span id="today" class="header-date"></span>
+                <div class="app-menu-anchor">
+                    <button type="button" class="icon-button settings-trigger" data-action="toggle-app-menu" aria-label="Menu lainnya" aria-controls="app-menu" aria-expanded="false"><svg class="icon" aria-hidden="true"><use href="#i-more"/></svg></button>
+                    <div id="app-menu" class="app-menu" role="group" aria-label="Menu lainnya" inert>
+                        <button type="button" class="app-menu-item" data-action="settings"><svg class="icon" aria-hidden="true"><use href="#i-settings"/></svg><span>Pengaturan</span></button>
+                        <button type="button" class="app-menu-item" data-action="backup-settings"><svg class="icon" aria-hidden="true"><use href="#i-database"/></svg><span>Cadangan dan pemulihan</span></button>
+                        <a id="rate-app" class="app-menu-item" aria-disabled="true"><svg class="icon" aria-hidden="true"><use href="#i-star"/></svg><span>Beri penilaian<span class="setting-link-status">Belum tersedia</span></span><svg class="icon setting-external" aria-hidden="true" hidden><use href="#i-external"/></svg></a>
+                        <a id="support-developer" class="app-menu-item" aria-disabled="true"><svg class="icon" aria-hidden="true"><use href="#i-gift"/></svg><span>Dukung pengembang<span class="setting-link-status">Belum tersedia</span></span><svg class="icon setting-external" aria-hidden="true" hidden><use href="#i-external"/></svg></a>
+                    </div>
+                </div>
+            </div>
         </header>
         <main id="konten" class="main-content" tabindex="-1">
-            <div id="connection-error" class="connection-error" role="alert" hidden><div><strong>Sadaku belum terhubung.</strong><p id="connection-message"></p></div><button type="button" class="button button-outline" data-action="retry">Coba lagi</button></div>
+            <div id="connection-error" class="connection-error" role="alert" hidden><div><strong>Data belum dapat dibuka.</strong><p id="connection-message"></p></div><button type="button" class="button button-outline" data-action="retry">Coba lagi</button></div>
             <div id="loading" class="loading-state" role="status"><span class="loading-dot"></span>Menyiapkan ruang tabunganmu…</div>
             <div id="application" hidden>
                 <p id="period-announcement" class="sr-only" role="status"></p>
@@ -98,6 +109,16 @@
                 </section>
 
                 <section id="detail-view" hidden aria-labelledby="detail-title">
+                    <header class="detail-toolbar">
+                        <button type="button" class="icon-button" data-action="detail-back" aria-label="Kembali"><svg class="icon" aria-hidden="true"><use href="#i-back"/></svg></button>
+                        <div class="album-edit-actions">
+                            <button type="button" class="button button-outline" data-action="edit-album"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg>Ubah album</button>
+                            <button type="button" class="icon-button" data-action="delete-album" aria-label="Hapus album"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></button>
+                            <div class="app-menu-anchor">
+                                <button type="button" class="icon-button settings-trigger" data-action="toggle-app-menu" aria-label="Menu lainnya" aria-controls="app-menu" aria-expanded="false"><svg class="icon" aria-hidden="true"><use href="#i-more"/></svg></button>
+                            </div>
+                        </div>
+                    </header>
                     <div id="album-detail"></div>
                     <div id="album-plan"></div>
                     <div class="section-heading album-activity-heading"><div><p class="eyebrow">SETORAN & PENARIKAN</p><h2>Aktivitas album</h2></div><span id="detail-count" class="album-activity-count"></span></div>
@@ -127,7 +148,9 @@
                         <div class="report-topline">
                             <button type="button" class="report-back" data-view="history" aria-label="Kembali ke Riwayat"><svg class="icon" aria-hidden="true"><use href="#i-chevron"/></svg></button>
                             <h1 id="statistics-title" tabindex="-1">Statistik</h1>
-                            <button type="button" class="report-settings" data-action="settings" aria-label="Buka pengaturan" aria-controls="settings-view"><svg class="icon" aria-hidden="true"><use href="#i-more"/></svg></button>
+                            <div class="app-menu-anchor report-menu-anchor">
+                                <button type="button" class="report-settings" data-action="toggle-app-menu" aria-label="Menu lainnya" aria-controls="app-menu" aria-expanded="false"><svg class="icon" aria-hidden="true"><use href="#i-more"/></svg></button>
+                            </div>
                         </div>
                     </header>
                     <div id="monthly-report"></div>
@@ -135,42 +158,66 @@
                 <button type="button" id="album-create-fab" class="button button-primary album-create-fab" data-action="new-album" aria-haspopup="dialog" aria-controls="album-dialog" hidden><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Buat album</button>
             </div>
             <section id="settings-view" class="settings-page" hidden aria-labelledby="settings-title">
-                <button type="button" class="text-button settings-back" data-action="settings-back"><svg class="icon" aria-hidden="true"><use href="#i-back"/></svg>Kembali</button>
-                <div class="page-heading"><div><p class="eyebrow">PREFERENSI APLIKASI</p><h1 id="settings-title" tabindex="-1">Pengaturan<span class="heading-dot">.</span></h1><p class="page-description">Sesuaikan Sadaku untuk perangkatmu.</p></div></div>
-                <section class="settings-group" aria-labelledby="appearance-title">
-                    <h2 id="appearance-title">Tampilan</h2>
-                    <div class="settings-card theme-panel">
-                        <div class="setting-heading"><span class="setting-icon" aria-hidden="true"><svg class="icon"><use href="#i-sun"/></svg></span><div class="setting-copy"><h3>Tema aplikasi</h3><p id="theme-description">Mengikuti tema perangkat.</p></div></div>
-                        <fieldset class="theme-choices" aria-describedby="theme-description"><legend class="sr-only">Pilih tema aplikasi</legend>
-                            <label class="theme-choice"><input type="radio" name="app_theme" value="light"><svg class="icon" aria-hidden="true"><use href="#i-sun"/></svg><span>Terang</span><svg class="icon theme-check" aria-hidden="true"><use href="#i-check"/></svg></label>
-                            <label class="theme-choice"><input type="radio" name="app_theme" value="dark"><svg class="icon" aria-hidden="true"><use href="#i-moon"/></svg><span>Gelap</span><svg class="icon theme-check" aria-hidden="true"><use href="#i-check"/></svg></label>
-                            <label class="theme-choice"><input type="radio" name="app_theme" value="system" checked><svg class="icon" aria-hidden="true"><use href="#i-device"/></svg><span>Ikuti perangkat</span><svg class="icon theme-check" aria-hidden="true"><use href="#i-check"/></svg></label>
+                <header class="settings-heading">
+                    <button type="button" class="settings-back" data-action="settings-back" aria-label="Kembali"><svg class="icon" aria-hidden="true"><use href="#i-back"/></svg></button>
+                    <h1 id="settings-title" tabindex="-1">Pengaturan</h1>
+                </header>
+                <div class="settings-list">
+                    <details>
+                        <summary class="settings-row">
+                            <svg class="icon" aria-hidden="true"><use href="#i-sun"/></svg>
+                            <span>Tema aplikasi<span id="theme-status" class="settings-row-status">Ikuti perangkat</span></span>
+                            <svg class="icon settings-chevron" aria-hidden="true"><use href="#i-chevron"/></svg>
+                        </summary>
+                        <fieldset class="theme-choices setting-panel">
+                            <legend class="sr-only">Tema aplikasi</legend>
+                            <label class="theme-choice"><input class="sr-only" type="radio" name="app_theme" value="light"><svg class="icon" aria-hidden="true"><use href="#i-sun"/></svg><span>Terang</span><svg class="icon theme-check" aria-hidden="true"><use href="#i-check"/></svg></label>
+                            <label class="theme-choice"><input class="sr-only" type="radio" name="app_theme" value="dark"><svg class="icon" aria-hidden="true"><use href="#i-moon"/></svg><span>Gelap</span><svg class="icon theme-check" aria-hidden="true"><use href="#i-check"/></svg></label>
+                            <label class="theme-choice"><input class="sr-only" type="radio" name="app_theme" value="system" checked><svg class="icon" aria-hidden="true"><use href="#i-device"/></svg><span>Ikuti perangkat</span><svg class="icon theme-check" aria-hidden="true"><use href="#i-check"/></svg></label>
                         </fieldset>
-                    </div>
-                </section>
-                <section class="settings-group" aria-labelledby="security-title">
-                    <h2 id="security-title">Keamanan</h2>
-                    <div class="settings-card"><div class="setting-row"><span class="setting-icon" aria-hidden="true"><svg class="icon"><use href="#i-fingerprint"/></svg></span><div class="setting-copy"><h3>Autentikasi biometrik</h3><p>Kunci dengan sidik jari atau pengenal wajah.</p><p class="setting-note">Belum tersedia pada Sadaku versi web ini.</p></div><span class="setting-badge">Belum tersedia</span></div></div>
-                </section>
-                <section class="settings-group" aria-labelledby="permissions-title">
-                    <h2 id="permissions-title">Izin perangkat</h2>
-                    <div class="settings-card">
-                        <div id="notification-settings" class="notification-settings">
-                            <div class="setting-heading"><span class="setting-icon" aria-hidden="true"><svg class="icon"><use href="#i-bell"/></svg></span><div class="setting-copy"><h3 id="notification-title" tabindex="-1">Izin notifikasi</h3><p>Pengingat jadwal menabung di perangkat ini.</p></div><span id="notification-badge" class="setting-badge" role="status">Memeriksa</span></div>
-                            <div class="setting-body"><p id="device-notification-status" class="settings-description"></p><div class="settings-actions"><button id="enable-device" type="button" class="button button-primary" hidden>Aktifkan notifikasi</button><button id="test-device" type="button" class="button button-outline" hidden>Kirim notifikasi uji</button><button id="disable-device" type="button" class="text-button" hidden>Nonaktifkan di perangkat ini</button></div><p class="field-help">Jadwal dan jam diatur pada masing-masing album. Perangkat lain tetap memakai pengaturannya sendiri.</p><p class="form-error" role="alert"></p></div>
+                    </details>
+                    <details id="notification-settings">
+                        <summary id="notification-title" class="settings-row">
+                            <svg class="icon" aria-hidden="true"><use href="#i-bell"/></svg>
+                            <span>Notifikasi<span id="notification-badge" class="settings-row-status" role="status">Memeriksa</span></span>
+                            <svg class="icon settings-chevron" aria-hidden="true"><use href="#i-chevron"/></svg>
+                        </summary>
+                        <div class="setting-panel notification-panel">
+                            <p id="device-notification-status"></p>
+                            <div class="settings-actions"><button id="enable-device" type="button" class="button button-primary" hidden>Aktifkan notifikasi</button><button id="test-device" type="button" class="button button-outline" hidden>Kirim notifikasi uji</button><button id="disable-device" type="button" class="text-button" hidden>Nonaktifkan di perangkat ini</button></div>
+                            <p class="field-help">Jadwal dan jam diatur pada masing-masing album.</p>
+                            <p class="form-error" role="alert"></p>
                         </div>
-                        <div class="setting-row"><span class="setting-icon" aria-hidden="true"><svg class="icon"><use href="#i-alarm"/></svg></span><div class="setting-copy"><h3>Izin alarm</h3><p>Pengingat dengan alarm perangkat Android.</p><p class="setting-note">Belum tersedia pada versi web. Pengingat saat ini menggunakan notifikasi.</p></div><span class="setting-badge">Belum tersedia</span></div>
-                    </div>
-                </section>
+                    </details>
+                    <button type="button" class="settings-row" data-action="backup-settings">
+                        <svg class="icon" aria-hidden="true"><use href="#i-database"/></svg><span>Cadangan dan pemulihan</span><svg class="icon settings-chevron" aria-hidden="true"><use href="#i-chevron"/></svg>
+                    </button>
+                </div>
                 <section class="settings-group" aria-labelledby="about-title">
                     <h2 id="about-title">Tentang Sadaku</h2>
-                    <div class="settings-card">
-                        <a id="rate-app" class="setting-row setting-link" aria-disabled="true"><span class="setting-icon" aria-hidden="true"><svg class="icon"><use href="#i-star"/></svg></span><span class="setting-copy"><strong>Rate the app</strong><span>Beri penilaian di Google Play.</span></span><span class="setting-link-status setting-badge">Belum tersedia</span><svg class="icon setting-external" aria-hidden="true" hidden><use href="#i-external"/></svg></a>
-                        <a id="support-developer" class="setting-row setting-link" aria-disabled="true"><span class="setting-icon" aria-hidden="true"><svg class="icon"><use href="#i-gift"/></svg></span><span class="setting-copy"><strong>Gift for developer</strong><span>Dukung pengembangan Sadaku.</span></span><span class="setting-link-status setting-badge">Belum tersedia</span><svg class="icon setting-external" aria-hidden="true" hidden><use href="#i-external"/></svg></a>
-                        <div class="setting-row setting-time"><div class="setting-copy"><h3>Waktu aplikasi</h3><p>Tanggal catatan dan jadwal pengingat menggunakan WIB.</p></div><span class="setting-timezone">Asia/Jakarta<br><small>WIB · UTC+7</small></span></div>
-                    </div>
+                    <div class="setting-time"><span>Waktu aplikasi</span><span class="setting-timezone">Asia/Jakarta (WIB)</span></div>
+                    <details class="settings-help"><summary>Cara menjaga data tabungan</summary><p>Buat album, lalu catat setoran atau penarikan. Saldo dihitung dari catatan. Di Riwayat, tombol unduh membuat CSV sesuai filter. Gunakan Unduh cadangan untuk menyimpan seluruh data beserta foto, lalu Pulihkan cadangan jika ingin memindahkannya ke browser lain.</p></details>
+                    <details class="settings-help"><summary>Di mana data saya disimpan?</summary><p>Pada mode perangkat, data tabungan disimpan di browser ini. Browser atau perangkat lain memiliki penyimpanan terpisah. Menghapus data situs atau memakai sesi privat dapat menghilangkan data lokal. Pada mode server pribadi, data berada di database pemilik server dan pengingat dapat diproses oleh server. Jaga akses ke berkas cadangan yang memuat informasi tabungan.</p></details>
                 </section>
-                <p class="settings-footnote">Preferensi tema dan notifikasi berlaku untuk perangkat ini.</p>
+            </section>
+            <section id="backup-view" class="settings-page" hidden aria-labelledby="backup-title">
+                <header class="settings-heading">
+                    <button type="button" class="settings-back" data-action="settings-back" aria-label="Kembali"><svg class="icon" aria-hidden="true"><use href="#i-back"/></svg></button>
+                    <h1 id="backup-title" tabindex="-1">Cadangan dan pemulihan</h1>
+                </header>
+                <section id="storage-settings" class="settings-group" aria-labelledby="storage-status">
+                    <h2 id="storage-status">Di perangkat ini</h2>
+                    <p id="storage-description"></p>
+                    <div class="settings-actions"><button type="button" id="backup-data" class="button button-outline" data-action="backup-data" disabled>Unduh cadangan</button><button type="button" id="restore-data" class="text-button" data-action="restore-data" disabled>Pulihkan cadangan</button></div>
+                    <input type="file" id="restore-file" accept="application/json,.json" hidden>
+                    <p id="backup-last-created" class="field-help"></p>
+                    <p class="field-help">Cadangan berisi album, catatan, rencana, dan foto. Simpan berkas secara pribadi. Pemulihan mengganti data perangkat setelah pratinjau dan konfirmasi. Maksimal 32 MB.</p>
+                    <div class="storage-source">
+                        <p>Penyimpanan perangkat dan server pribadi terpisah. Mengganti sumber data tidak memindahkan isi tabungan.</p>
+                        <div class="settings-actions"><button type="button" id="use-server-data" class="text-button" data-action="use-server-data">Buka data server pribadi</button><button type="button" id="use-local-data" class="text-button" data-action="use-local-data" hidden>Gunakan data perangkat ini</button></div>
+                    </div>
+                    <p class="form-error" role="alert"></p>
+                </section>
             </section>
             <noscript><div class="connection-error">Aktifkan JavaScript untuk mengelola album dan catatan Sadaku.</div></noscript>
         </main>
@@ -179,6 +226,15 @@
             <button type="button" class="credit-top" data-action="back-to-top" aria-label="Kembali ke atas halaman">Ke atas <span aria-hidden="true">&uarr;</span></button>
         </footer>
     </div>
+
+    <dialog id="restore-dialog" class="small-dialog" aria-labelledby="restore-title">
+        <div class="dialog-heading"><h2 id="restore-title">Pulihkan cadangan?</h2><button type="button" class="icon-button" data-close aria-label="Batal memulihkan"><svg class="icon"><use href="#i-close"/></svg></button></div>
+        <p id="restore-summary" class="settings-description"></p>
+        <p class="field-help">Unduh cadangan data saat ini sebelum melanjutkan jika masih ingin menyimpannya.</p>
+        <label class="restore-confirmation"><input type="checkbox" id="restore-confirmation"><span>Saya memahami bahwa data tabungan pada perangkat ini akan diganti.</span></label>
+        <p class="form-error" role="alert"></p>
+        <div class="dialog-actions"><button type="button" class="button button-outline" data-close>Batal</button><button type="button" id="apply-restore" class="button button-primary" disabled>Pulihkan</button></div>
+    </dialog>
 
     <dialog id="history-filter-dialog" aria-labelledby="history-filter-title">
         <div class="dialog-heading"><h2 id="history-filter-title">Filter aktivitas</h2><button type="button" class="icon-button" data-close aria-label="Tutup filter"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg></button></div>
@@ -199,7 +255,7 @@
             <label id="remove-image-label" class="checkbox-label" hidden><input type="checkbox" name="remove_image" value="1">Hapus foto saat ini</label>
             <fieldset class="color-field"><legend>Warna album</legend><label class="color-choice" data-color="sage"><input type="radio" name="color" value="sage" checked><span class="sr-only">Hijau sage</span></label><label class="color-choice" data-color="peach"><input type="radio" name="color" value="peach"><span class="sr-only">Peach</span></label><label class="color-choice" data-color="lilac"><input type="radio" name="color" value="lilac"><span class="sr-only">Lilac</span></label><label class="color-choice" data-color="sand"><input type="radio" name="color" value="sand"><span class="sr-only">Pasir</span></label></fieldset>
             <label class="field-label" for="album-name">Nama album</label><input id="album-name" name="name" type="text" placeholder="Misalnya, iPhone 17 Pro Max" maxlength="70" required>
-            <div class="form-grid"><div><label class="field-label" for="album-target">Nominal target</label><div class="money-input"><span>Rp</span><input id="album-target" name="target" type="text" data-money inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="24" placeholder="25.000.000" required></div></div><div><label class="field-label" for="album-deadline">Target tanggal <span>(opsional)</span></label><input id="album-deadline" name="deadline" type="date" min="1900-01-01" max="2200-12-31"></div></div>
+            <div class="form-grid"><div><label class="field-label" for="album-target">Nominal target</label><div class="money-input target-money-input"><label class="sr-only" for="album-currency">Mata uang album</label><select id="album-currency" name="currency" aria-describedby="album-currency-help"></select><input id="album-target" name="target" type="text" data-money inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="24" placeholder="25.000.000" required></div><p id="album-currency-help" class="field-help"></p></div><div><label class="field-label" for="album-deadline">Target tanggal <span>(opsional)</span></label><input id="album-deadline" name="deadline" type="date" min="1900-01-01" max="2200-12-31"></div></div>
             <label class="field-label" for="album-motivation">Kenapa kamu ingin mencapainya? <span>(opsional)</span></label><textarea id="album-motivation" name="motivation" maxlength="180" rows="2" placeholder="Biar perjalanan kerja lebih nyaman setiap hari."></textarea>
             <p class="field-help">Alasan ini akan menemanimu di halaman album.</p>
             <section id="album-plan-editor" class="album-plan-editor" aria-labelledby="album-plan-label">
@@ -217,7 +273,7 @@
                         <label class="plan-toggle switch-label"><span><strong>Ingatkan saya</strong><small>Pengingat sesuai jadwal menabung.</small></span><input id="album-plan-reminder" name="plan_reminder_enabled" type="checkbox" role="switch" value="1" aria-controls="album-reminder-fields" aria-expanded="false"></label>
                         <fieldset id="album-reminder-fields" class="reminder-fields" hidden disabled><legend class="sr-only">Waktu pengingat</legend><label class="field-label" for="album-plan-time">Jam pengingat <span>WIB</span></label><input id="album-plan-time" name="plan_reminder_time" type="time" value="19:00" required><p id="album-plan-device-help" class="field-help" aria-live="polite"></p><button id="album-enable-device" type="button" class="text-button">Aktifkan notifikasi perangkat ini</button></fieldset>
                     </div>
-                    <div class="form-grid"><div><label class="field-label" for="album-plan-amount">Nominal <span id="album-plan-amount-unit">per hari</span></label><div class="money-input"><span>Rp</span><input id="album-plan-amount" name="plan_amount" type="text" data-money inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="24" placeholder="50.000" required></div></div><div><label class="field-label" for="album-plan-start">Mulai tanggal</label><input id="album-plan-start" name="plan_start_date" type="date" min="1900-01-01" max="2200-12-31" required></div></div>
+                    <div class="form-grid"><div><label class="field-label" for="album-plan-amount">Nominal <span id="album-plan-amount-unit">per hari</span></label><div class="money-input"><span data-currency-label>Rp</span><input id="album-plan-amount" name="plan_amount" type="text" data-money inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="24" placeholder="50.000" required></div></div><div><label class="field-label" for="album-plan-start">Mulai tanggal</label><input id="album-plan-start" name="plan_start_date" type="date" min="1900-01-01" max="2200-12-31" required></div></div>
                     <div id="album-plan-day-field" hidden><label class="field-label" for="album-plan-day">Hari menabung</label><select id="album-plan-day" name="plan_schedule_day"></select></div>
                     <p id="album-plan-calendar-help" class="field-help"></p>
                     <div class="plan-suggestion"><p id="album-plan-estimate" class="field-help" aria-live="polite"></p><button id="use-album-plan-suggestion" type="button" class="text-button" hidden>Gunakan saran</button></div>
@@ -236,7 +292,7 @@
             <div class="entry-context"><span class="entry-context-icon" aria-hidden="true"><svg class="icon"><use href="#i-album"/></svg></span><div><span id="entry-context-label">Untuk album</span><strong id="entry-context-album"></strong><p id="entry-date-label"></p></div></div>
             <fieldset class="entry-types"><legend class="sr-only">Jenis catatan</legend><label><input type="radio" name="type" value="deposit" checked><svg class="icon"><use href="#i-in"/></svg>Setoran</label><label><input type="radio" name="type" value="withdrawal"><svg class="icon"><use href="#i-out"/></svg>Penarikan</label></fieldset>
             <div id="entry-album-picker" hidden><label class="field-label" for="entry-album">Pilih album</label><select id="entry-album" disabled></select></div>
-            <label class="field-label" for="entry-amount">Nominal</label><div class="money-input"><span>Rp</span><input id="entry-amount" name="amount" type="text" data-money inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="24" placeholder="50.000" required></div>
+            <label class="field-label" for="entry-amount">Nominal</label><div class="money-input"><span data-currency-label>Rp</span><input id="entry-amount" name="amount" type="text" data-money inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="24" placeholder="50.000" required></div>
             <label class="field-label" for="entry-note">Catatan <span>(opsional)</span></label><input id="entry-note" name="note" type="text" maxlength="120" placeholder="Misalnya, sisihan uang minggu ini">
             <p id="entry-balance-hint" class="field-help"></p>
             <p class="form-error" role="alert"></p><div class="dialog-actions"><button type="button" class="button button-neutral" data-close>Batal</button><button type="submit" class="button button-primary">Simpan catatan</button></div>

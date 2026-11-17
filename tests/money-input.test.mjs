@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { bindMoneyInputs, formatMoney, moneyEdit, moneyFormData, rawMoney, setMoneyValue } from '../assets/js/money-input.js';
+import { bindMoneyInputs, formatMoney, moneyEdit, moneyFormData, rawMoney, setMoneyValue } from '../assets/js/components/money-input.js';
 
 test('Pemisah ribuan muncul saat digit bertambah tanpa mengubah nominal', () => {
     for (const [raw, formatted] of [['5', '5'], ['50', '50'], ['500', '500'], ['5000', '5.000'], ['50000', '50.000'], ['500000', '500.000'], ['1000000000000', '1.000.000.000.000'], ['', '']]) {

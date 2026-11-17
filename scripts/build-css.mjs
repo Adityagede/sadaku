@@ -14,7 +14,6 @@ const compiler = await compile(input, {
 const scanner = new Scanner({
     sources: [
         { base: root, pattern: 'index.html', negated: false },
-        { base: root, pattern: 'pages/**/*.{html,php}', negated: false },
         { base: root, pattern: 'assets/js/**/*.js', negated: false }
     ]
 });

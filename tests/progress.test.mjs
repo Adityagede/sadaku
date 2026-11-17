@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { calculateProgress, formatProgress } from '../assets/js/progress.js';
+import { calculateProgress, formatProgress } from '../assets/js/domain/progress.js';
 
 test('setoran Rp1.000 ke target Rp25 juta tetap memiliki progres', () => {
     const value = calculateProgress(1000, 25000000);

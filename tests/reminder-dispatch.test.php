@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 if (getenv('SADAKU_ISOLATED_TEST') !== '1') { fwrite(STDERR, "Jalankan melalui npm test agar database pribadi tidak berubah.\n"); exit(1); }
-require __DIR__ . '/send-reminders.php';
+require dirname(__DIR__) . '/scripts/send-reminders.php';
 $db = database();
 $album = str_repeat('c', 24);
 $subscriptionId = str_repeat('d', 32);

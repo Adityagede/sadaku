@@ -10,6 +10,7 @@ export function createDeviceNotifications({ request, changed }) {
         return navigator.serviceWorker.ready;
     }
     function status() {
+        if (config.local) return { active: false, canEnable: false, message: 'Rencana menabung tersimpan di perangkat ini. Pengingat saat aplikasi tertutup belum tersedia untuk mode ini.' };
         if (!supported()) return { active: false, canEnable: false, message: 'Notifikasi belum didukung di browser ini. Gunakan browser yang mendukung dan koneksi HTTPS. Di iPhone/iPad, buka Sadaku dari Layar Utama.' };
         if (!config.configured) return { active: false, canEnable: false, message: 'Layanan pengingat belum diaktifkan di server. Rencana dan jam pilihanmu tetap dapat disimpan.' };
         if (Notification.permission === 'denied') return { active: false, canEnable: false, message: 'Izin notifikasi diblokir. Izinkan Sadaku melalui pengaturan situs di browser, lalu aktifkan kembali di sini.' };

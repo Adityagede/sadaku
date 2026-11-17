@@ -1,3 +1,29 @@
+# Audit struktur dan kebersihan ? 17 November 2026
+
+Audit ini mempertahankan desain yang telah dipulihkan dan fitur mata uang per album. Snapshot sumber sebelum perapian tersimpan lokal pada `.test-storage-refactor/before.json`; database utama dan berkas konfigurasi pribadi tidak disentuh.
+
+## Hasil perapian
+
+- Entry browser dipindahkan dari `assets/js/main.js` ke `assets/js/app.js`. Ukurannya turun dari 1.235 menjadi 403 baris; pengendali halaman/formulir serta komponen bersama kini berada di modul masing-masing.
+- Aturan bisnis berada di `domain/`; IndexedDB, adapter sumber, cadangan, dan notifikasi berada di `data/`. Animasi DOM aktivitas dipisahkan dari pengolahan aktivitas domain. Terdapat 32 modul browser, semuanya terhubung ke entry aplikasi atau script tema.
+- Sebanyak 21 berkas pengujian/helper dipindahkan dari `scripts/` ke `tests/`. Impor, perintah npm, runner MySQL, router, konteks Docker, daftar cache offline, dan dokumentasi ikut diperbarui. Jalur `tests/` diblokir untuk Apache dan tidak masuk daftar router publik.
+- Tiga impor yang tidak digunakan dan dependensi/ekspor pengendali yang tidak diperlukan dihapus. Tidak ada penghapusan aturan keuangan, fitur pemulihan, atau dependensi runtime.
+- Cache npm lokal serta hasil konsep dan salinan redesign yang dibatalkan dihapus setelah pemeriksaan path. Total berkas yang dibersihkan: **78.879.580 byte (sekitar 75,2 MiB)**. Dependensi aktif `node_modules/` dan `vendor/` dipertahankan. Bukti audit lama dan snapshot perapian dipertahankan untuk pemulihan.
+
+## Verifikasi
+
+- **114 tes JavaScript lulus**, termasuk alur DOM yang kini memuat graf ES modules sebenarnya di jsdom, mata uang campuran, persistensi, pemulihan, dan offline.
+- **117 pemeriksaan API lokal + 113 simulasi produksi lulus** dengan MySQL sementara. Pengiriman pengingat, deduplikasi, jeda, retry, dan langganan kedaluwarsa lulus.
+- Tes PHP pengaturan, **10 pemeriksaan CSRF**, validasi rencana/notifikasi, serta enkripsi/VAPID dengan HTTP mock lulus.
+- Build CSS lulus. Keempat berkas CSS (termasuk hasil build) **identik** dengan snapshot sebelum perapian. HTML **identik setelah menormalkan dua perubahan jalur script**.
+- Pemeriksaan sumber memvalidasi sintaks, impor, keterjangkauan modul, serta registrasi router/cache offline. Tidak ada modul browser yang tidak terhubung.
+
+Pemeriksaan visual browser dan build Docker nyata tidak diklaim pada audit struktur ini. Tidak ada perubahan styling atau susunan HTML; simulasi produksi memeriksa filesystem dan API melalui PHP.
+
+Panduan developer: [PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md).
+
+---
+
 # Audit kode Sadaku — 16 November 2026
 
 Audit dilakukan terhadap working tree saat ini, termasuk perubahan lokal yang sudah ada sebelum audit. Perubahan tersebut dipertahankan; audit tidak melakukan commit atau mengubah staging Git.
@@ -57,7 +83,7 @@ Pemeriksaan awal dilakukan sebelum perubahan; pemeriksaan terkait diulang setela
 | Build dan sintaks JavaScript | `npm run build`, `npm run check`, dan pemeriksaan seluruh file JavaScript lulus |
 | Pemeriksaan statis tambahan | Import modul lokal tersedia; nama kelas yang dihapus tidak dirujuk runtime; aturan CSS aktif dipertahankan; perubahan query sesuai cakupan; `git diff --check` lulus |
 
-Tes integrasi memakai database sementara terpisah melalui `scripts/test-mysql.mjs`. Audit tidak menjalankan setup, CRUD, atau pengiriman push terhadap database utama. Notifikasi ke perangkat nyata dan container Docker/Caddy di hosting tidak diuji. Mode produksi di atas adalah simulasi layout filesystem dan konfigurasi API melalui server PHP pengujian.
+Tes integrasi memakai database sementara terpisah melalui `tests/test-mysql.mjs`. Audit tidak menjalankan setup, CRUD, atau pengiriman push terhadap database utama. Notifikasi ke perangkat nyata dan container Docker/Caddy di hosting tidak diuji. Mode produksi di atas adalah simulasi layout filesystem dan konfigurasi API melalui server PHP pengujian.
 
 Pemeriksaan visual belum selesai: browser automation melaporkan **“The browser access host is unavailable”**, dan jalur observasi aplikasi native tidak memberikan tampilan browser yang dapat diverifikasi. Tidak ada kesimpulan visual yang diklaim dari percobaan tersebut.
 

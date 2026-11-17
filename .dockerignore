@@ -12,6 +12,8 @@
 !assets/css/theme.css
 !assets/js/
 !assets/js/*.js
+!assets/js/**/
+!assets/js/**/*.js
 !assets/images/
 !assets/images/*.svg
 !deployment/
